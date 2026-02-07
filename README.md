@@ -3,9 +3,9 @@
 ![Chico Chuwawa Logo](chico-logo.png)
 
 **Built by Max van Heerden**  
-**Version 2.0.0**
+**Version 2.1.0**
 
-A powerful command-line interface (CLI) tool for Windows that integrates with **OpenRouter** and **Ollama Cloud** APIs. Access hundreds of AI models from multiple providers through a single, easy-to-use interface.
+A powerful command-line interface (CLI) tool for Windows that integrates with **OpenRouter** and **Ollama Cloud** APIs. Access hundreds of AI models from multiple providers through a single, easy-to-use interface. Now with **WhatsApp Web integration**!
 
 ## 🌟 Features
 
@@ -582,8 +582,17 @@ OpenRouter and Ollama have rate limits. If you hit them:
 - **Ollama Cloud**: [ollama.com/cloud](https://ollama.com/cloud)
 - **Ollama Docs**: [docs.ollama.com](https://docs.ollama.com/)
 
-## 🎉 What's New in v2.0
+## 🎉 What's New
 
+### v2.1.0 (Latest)
+- ✅ **WhatsApp Web Integration**: Connect, monitor, and send messages via WhatsApp Web
+- ✅ **QR Code Scanning**: Easy connection with QR code authentication
+- ✅ **Message Monitoring**: Real-time incoming message monitoring
+- ✅ **Cross-Platform Browsers**: Support for Chrome, Firefox, and Edge
+- ✅ **AI Integration Ready**: Send AI-generated prompts and responses
+- ✅ **Session Persistence**: Save sessions to avoid repeated QR scanning
+
+### v2.0
 - ✅ **OpenRouter Integration**: Access 500+ models
 - ✅ **Ollama Cloud Support**: Cloud-hosted models
 - ✅ **Multi-Provider System**: Switch between providers easily
@@ -597,10 +606,10 @@ OpenRouter and Ollama have rate limits. If you hit them:
 **Chico Chuwawa AI CLI** is designed to give you freedom of choice in AI models. No lock-in to specific providers or models - use what works best for your needs.
 
 **Built by**: Max van Heerden  
-**Version**: 2.0.0  
+**Version**: 2.1.0  
 **License**: Free for personal and commercial use
 
 ---
 
-**Chico Chuwawa AI CLI** - Your gateway to hundreds of AI models! 🐕✨
+**Chico Chuwawa AI CLI** - Your gateway to hundreds of AI models and WhatsApp automation! 🐕✨
 

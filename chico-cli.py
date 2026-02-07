@@ -2,9 +2,10 @@
 """
 Chico Chuwawa AI CLI
 A powerful command-line interface for interacting with OpenRouter and Ollama Cloud APIs
+Now with WhatsApp Web integration!
 
 Built by: Max van Heerden
-Version: 2.0.0
+Version: 2.1.0
 """
 
 import os
