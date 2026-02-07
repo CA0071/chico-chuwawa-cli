@@ -1,21 +1,46 @@
-# Chico Chuwawa AI CLI
+# Chico Chuwawa AI CLI - Enhanced Edition
 
 ![Chico Chuwawa Logo](chico-logo.png)
 
 **Built by Max van Heerden**  
-**Version 2.0.0**
+**Version 2.1.0**
 
-A powerful command-line interface (CLI) tool for Windows that integrates with **OpenRouter** and **Ollama Cloud** APIs. Access hundreds of AI models from multiple providers through a single, easy-to-use interface.
+A powerful command-line interface (CLI) tool with **rich terminal UI**, **multi-cloud integrations**, and **AI-driven orchestration**. Access hundreds of AI models while managing Docker, Kubernetes, npm, PyPI, and cloud services - all from a unified interface.
 
-## 🌟 Features
+## 🌟 Enhanced Features
 
+### AI & LLM Capabilities
 - **Multi-Provider Support**: OpenRouter and Ollama Cloud integration
 - **Hundreds of Models**: Access models from OpenAI, Anthropic, Google, Meta, Mistral, DeepSeek, and more
 - **Easy Provider Switching**: Switch between providers with a single command
 - **Interactive Chat Mode**: Multi-turn conversations with context
 - **Streaming Responses**: Real-time response streaming with automatic fallback
-- **Flexible Configuration**: Per-provider API keys and default models
+- **AI-Powered Auto-Completion**: Intelligent command suggestions and completions
 - **No GPT Lock-in**: Choose your own models from any supported provider
+
+### Rich Terminal UI (via rich library)
+- **Beautiful Tables**: Styled tables with colors and borders
+- **Syntax Highlighting**: Code and log syntax highlighting
+- **Progress Indicators**: Spinners and progress bars for operations
+- **Panels**: Organized information display
+- **Live Updates**: Real-time monitoring dashboards
+
+### Integration Hub (MCP-like Orchestration)
+- **Docker Integration**: Manage containers, images, and view logs
+- **Kubernetes Integration**: Monitor pods, deployments, services across clusters
+- **npm Registry**: Search and get info on npm packages
+- **PyPI Integration**: Search and get info on Python packages
+- **AWS Integration**: Basic S3 and EC2 management
+- **GCP Integration**: Google Cloud Storage management
+- **Azure Integration**: Blob storage management
+- **Unified Health Monitoring**: Track status of all integrations
+- **Service Discovery**: Automatic detection of available services
+
+### Advanced Command Features
+- **Auto-Completion**: Tab completion for commands and arguments
+- **Smart Defaults**: AI-driven default values based on context
+- **Command History**: Track and reuse frequent commands
+- **Real-Time Monitoring**: Live dashboards for containers, pods, and services
 
 ## 🚀 Supported Providers
 
@@ -54,6 +79,87 @@ This installs:
 - `openai` - OpenAI-compatible API client
 - `ollama` - Ollama Cloud client
 - `requests` - HTTP library
+- `rich` - Beautiful terminal formatting
+- `click` - Advanced command-line parsing
+- `docker` - Docker API client
+- `kubernetes` - Kubernetes API client
+- `boto3` - AWS SDK
+- `google-cloud-storage` - Google Cloud SDK
+- `azure-storage-blob` - Azure SDK
+- `prompt-toolkit` - Interactive prompts and auto-completion
+
+## 🎯 Quick Start
+
+### Basic Usage (Original CLI)
+
+```bash
+# Configure OpenRouter
+python chico_cli.py config openrouter --api-key YOUR_KEY
+
+# Chat with AI
+python chico_cli.py chat "What is Python?"
+
+# Interactive mode
+python chico_cli.py interactive
+```
+
+### Enhanced CLI with Rich UI
+
+```bash
+# Show welcome screen with all features
+python chico-cli-enhanced.py welcome
+
+# View AI providers with rich table
+python chico-cli-enhanced.py providers
+
+# View integration status
+python chico-cli-enhanced.py integrations
+
+# View MCP hub status
+python chico-cli-enhanced.py hub-status
+```
+
+### Docker Integration
+
+```bash
+# List all containers
+python chico-cli-enhanced.py docker containers
+
+# List images
+python chico-cli-enhanced.py docker images
+
+# View container logs
+python chico-cli-enhanced.py docker logs <container_id>
+```
+
+### Kubernetes Integration
+
+```bash
+# List pods in default namespace
+python chico-cli-enhanced.py k8s pods
+
+# List pods in specific namespace
+python chico-cli-enhanced.py k8s pods --namespace production
+
+# List deployments
+python chico-cli-enhanced.py k8s deployments
+
+# List services
+python chico-cli-enhanced.py k8s services
+```
+
+### Package Management
+
+```bash
+# Search npm packages
+python chico-cli-enhanced.py npm search react
+
+# Get npm package info
+python chico-cli-enhanced.py npm info react
+
+# Get PyPI package info
+python chico-cli-enhanced.py pypi info requests
+```
 
 ## 🔑 Configuration
 
@@ -121,6 +227,103 @@ Output:
 ```bash
 python chico-cli.py switch ollama
 ```
+
+## 🔧 Integration Configuration
+
+### Docker Integration
+
+Docker integration works automatically if Docker is running on your system. No additional configuration needed.
+
+```bash
+# Test Docker connection
+python chico-cli-enhanced.py docker containers
+```
+
+**For remote Docker:**
+Create/edit `integrations.json` in your config directory:
+```json
+{
+  "docker": {
+    "base_url": "tcp://remote-host:2375"
+  }
+}
+```
+
+### Kubernetes Integration
+
+Kubernetes integration uses your existing `kubectl` configuration.
+
+```bash
+# Test K8s connection
+python chico-cli-enhanced.py k8s pods
+```
+
+**For custom kubeconfig:**
+```json
+{
+  "kubernetes": {
+    "kubeconfig_path": "/path/to/custom/kubeconfig"
+  }
+}
+```
+
+### npm and PyPI
+
+These integrations work out of the box - no configuration needed.
+
+```bash
+# Test npm
+python chico-cli-enhanced.py npm search typescript
+
+# Test PyPI
+python chico-cli-enhanced.py pypi info django
+```
+
+### AWS Integration
+
+Configure AWS credentials:
+
+```json
+{
+  "aws": {
+    "aws_access_key_id": "YOUR_ACCESS_KEY",
+    "aws_secret_access_key": "YOUR_SECRET_KEY",
+    "region": "us-east-1"
+  }
+}
+```
+
+Or use AWS CLI default credentials from `~/.aws/credentials`.
+
+### GCP Integration
+
+Set up Google Cloud credentials:
+
+```json
+{
+  "gcp": {
+    "credentials_path": "/path/to/service-account-key.json"
+  }
+}
+```
+
+Or set `GOOGLE_APPLICATION_CREDENTIALS` environment variable.
+
+### Azure Integration
+
+Configure Azure connection:
+
+```json
+{
+  "azure": {
+    "connection_string": "DefaultEndpointsProtocol=https;AccountName=...;AccountKey=...;EndpointSuffix=core.windows.net"
+  }
+}
+```
+
+**Configuration File Location:**
+- **Windows**: `%APPDATA%\ChicoChuwawa-CLI\integrations.json`
+- **Linux/Mac**: `~/.config/chico-cli/integrations.json`
 
 ## 💬 Usage
 
