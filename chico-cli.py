@@ -91,6 +91,20 @@ class AICLI:
             'default_model': 'gpt-oss:120b-cloud',
             'supports_streaming': True,
             'models_endpoint': True
+        },
+        'huggingface': {
+            'name': 'Hugging Face Inference',
+            'base_url': 'https://api-inference.huggingface.co',
+            'default_model': 'meta-llama/Meta-Llama-3-8B-Instruct',
+            'supports_streaming': True,
+            'models_endpoint': False
+        },
+        'qwen': {
+            'name': 'Qwen (DashScope)',
+            'base_url': 'https://dashscope.aliyuncs.com/api/v1',
+            'default_model': 'qwen-turbo',
+            'supports_streaming': True,
+            'models_endpoint': False
         }
     }
     
@@ -142,6 +156,38 @@ class AICLI:
                     host=provider_info['base_url'],
                     headers={'Authorization': f'Bearer {api_key}'}
                 )
+                self.current_provider = provider
+                return
+        
+        # For Hugging Face, use the huggingface_hub library
+        if provider == 'huggingface':
+            try:
+                from huggingface_hub import InferenceClient
+                self.client = InferenceClient(token=api_key)
+                self.current_provider = provider
+                return
+            except ImportError:
+                print("Installing huggingface_hub package...")
+                os.system(f"{sys.executable} -m pip install huggingface_hub")
+                from huggingface_hub import InferenceClient
+                self.client = InferenceClient(token=api_key)
+                self.current_provider = provider
+                return
+        
+        # For Qwen (DashScope), use the dashscope library
+        if provider == 'qwen':
+            try:
+                import dashscope
+                dashscope.api_key = api_key
+                self.client = dashscope
+                self.current_provider = provider
+                return
+            except ImportError:
+                print("Installing dashscope package...")
+                os.system(f"{sys.executable} -m pip install dashscope")
+                import dashscope
+                dashscope.api_key = api_key
+                self.client = dashscope
                 self.current_provider = provider
                 return
         
@@ -219,6 +265,24 @@ class AICLI:
                 else:
                     print(f"  • {provider_info['default_model']} (default)")
                     print("\nNote: Could not fetch full model list.")
+            elif self.current_provider == 'huggingface':
+                # Show common Hugging Face models
+                print(f"  • {provider_info['default_model']} (default)")
+                print("  • meta-llama/Meta-Llama-3-70B-Instruct")
+                print("  • mistralai/Mistral-7B-Instruct-v0.2")
+                print("  • microsoft/Phi-3-mini-4k-instruct")
+                print("  • google/gemma-7b-it")
+                print("  • HuggingFaceH4/zephyr-7b-beta")
+                print("\nNote: Visit https://huggingface.co/models for full model list.")
+            elif self.current_provider == 'qwen':
+                # Show Qwen models
+                print(f"  • {provider_info['default_model']} (default)")
+                print("  • qwen-plus")
+                print("  • qwen-max")
+                print("  • qwen-max-longcontext")
+                print("  • qwen-vl-plus")
+                print("  • qwen-vl-max")
+                print("\nNote: Visit https://dashscope.aliyun.com for full model list.")
             else:
                 # OpenRouter and other OpenAI-compatible
                 models = self.client.models.list()
@@ -240,6 +304,15 @@ class AICLI:
                 print("  • kimi-k2:1t-cloud")
                 print("  • qwen3-coder:480b-cloud")
                 print("  • glm-4.6:cloud")
+            elif self.current_provider == 'huggingface':
+                print("  • meta-llama/Meta-Llama-3-70B-Instruct")
+                print("  • mistralai/Mistral-7B-Instruct-v0.2")
+                print("  • microsoft/Phi-3-mini-4k-instruct")
+                print("  • google/gemma-7b-it")
+            elif self.current_provider == 'qwen':
+                print("  • qwen-plus")
+                print("  • qwen-max")
+                print("  • qwen-max-longcontext")
             print(f"\nNote: Visit {provider_info['name']} website for full model list.")
             print()
     
@@ -270,6 +343,57 @@ class AICLI:
                     response = self.client.chat(model, messages=[{'role': 'user', 'content': message}], stream=False)
                     print("Response:", response.get('message', {}).get('content', ''))
                     print()
+            elif self.current_provider == 'huggingface':
+                # Use Hugging Face Inference Client
+                if stream:
+                    print("Response: ", end="", flush=True)
+                    response_text = ""
+                    for token in self.client.chat_completion(
+                        model=model,
+                        messages=[{"role": "user", "content": message}],
+                        stream=True,
+                        max_tokens=1024
+                    ):
+                        content = token.choices[0].delta.content
+                        if content:
+                            print(content, end="", flush=True)
+                            response_text += content
+                    print("\n")
+                else:
+                    response = self.client.chat_completion(
+                        model=model,
+                        messages=[{"role": "user", "content": message}],
+                        stream=False,
+                        max_tokens=1024
+                    )
+                    print("Response:", response.choices[0].message.content)
+                    print()
+            elif self.current_provider == 'qwen':
+                # Use Qwen DashScope API
+                from dashscope import Generation
+                response = Generation.call(
+                    model=model,
+                    messages=[{'role': 'user', 'content': message}],
+                    result_format='message',
+                    stream=stream,
+                    incremental_output=stream
+                )
+                
+                if stream:
+                    print("Response: ", end="", flush=True)
+                    for chunk in response:
+                        if chunk.status_code == 200:
+                            content = chunk.output.choices[0].message.content
+                            if content:
+                                print(content, end="", flush=True)
+                    print("\n")
+                else:
+                    if response.status_code == 200:
+                        print("Response:", response.output.choices[0].message.content)
+                        print()
+                    else:
+                        print(f"Error: {response.message}")
+                        sys.exit(1)
             else:
                 # OpenRouter and other OpenAI-compatible
                 if stream:
@@ -361,6 +485,55 @@ class AICLI:
                             response = self.client.chat(model, messages=messages, stream=False)
                             assistant_message = response.get('message', {}).get('content', '')
                             print(assistant_message, end="", flush=True)
+                    elif self.current_provider == 'huggingface':
+                        # Hugging Face client
+                        if use_streaming:
+                            assistant_message = ""
+                            for token in self.client.chat_completion(
+                                model=model,
+                                messages=messages,
+                                stream=True,
+                                max_tokens=1024
+                            ):
+                                content = token.choices[0].delta.content
+                                if content:
+                                    print(content, end="", flush=True)
+                                    assistant_message += content
+                        else:
+                            response = self.client.chat_completion(
+                                model=model,
+                                messages=messages,
+                                stream=False,
+                                max_tokens=1024
+                            )
+                            assistant_message = response.choices[0].message.content
+                            print(assistant_message, end="", flush=True)
+                    elif self.current_provider == 'qwen':
+                        # Qwen DashScope client
+                        from dashscope import Generation
+                        response = Generation.call(
+                            model=model,
+                            messages=messages,
+                            result_format='message',
+                            stream=use_streaming,
+                            incremental_output=use_streaming
+                        )
+                        
+                        if use_streaming:
+                            assistant_message = ""
+                            for chunk in response:
+                                if chunk.status_code == 200:
+                                    content = chunk.output.choices[0].message.content
+                                    if content:
+                                        print(content, end="", flush=True)
+                                        assistant_message += content
+                        else:
+                            if response.status_code == 200:
+                                assistant_message = response.output.choices[0].message.content
+                                print(assistant_message, end="", flush=True)
+                            else:
+                                assistant_message = ""
+                                print(f"Error: {response.message}", end="", flush=True)
                     else:
                         # OpenRouter and others
                         if use_streaming:
@@ -397,6 +570,23 @@ class AICLI:
                         if self.current_provider == 'ollama':
                             response = self.client.chat(model, messages=messages, stream=False)
                             assistant_message = response.get('message', {}).get('content', '')
+                        elif self.current_provider == 'huggingface':
+                            response = self.client.chat_completion(
+                                model=model,
+                                messages=messages,
+                                stream=False,
+                                max_tokens=1024
+                            )
+                            assistant_message = response.choices[0].message.content
+                        elif self.current_provider == 'qwen':
+                            from dashscope import Generation
+                            response = Generation.call(
+                                model=model,
+                                messages=messages,
+                                result_format='message',
+                                stream=False
+                            )
+                            assistant_message = response.output.choices[0].message.content
                         else:
                             response = self.client.chat.completions.create(
                                 model=model,
@@ -414,6 +604,276 @@ class AICLI:
                 break
             except Exception as e:
                 print(f"\nError: {e}\n")
+    
+    def interactive_setup(self):
+        """Interactive setup wizard using inquirer menus"""
+        try:
+            import inquirer
+        except ImportError:
+            print("Installing inquirer package for interactive menus...")
+            os.system(f"{sys.executable} -m pip install inquirer")
+            import inquirer
+        
+        print("\n" + "="*60)
+        print("  🐕 Chico Chuwawa AI CLI - Interactive Setup")
+        print("  Built by Max van Heerden")
+        print("="*60)
+        print("\n👋 Welcome! Let's set up your AI CLI.\n")
+        
+        # Step 1: Select provider
+        questions = [
+            inquirer.List('provider',
+                message="Which AI provider would you like to configure?",
+                choices=[
+                    ('OpenRouter (500+ models)', 'openrouter'),
+                    ('Ollama Cloud (Cloud-hosted models)', 'ollama'),
+                    ('Hugging Face Inference (Open models)', 'huggingface'),
+                    ('Qwen/DashScope (Alibaba Cloud)', 'qwen')
+                ],
+            ),
+        ]
+        answers = inquirer.prompt(questions)
+        
+        if not answers:
+            print("Setup cancelled.")
+            return
+        
+        provider = answers['provider']
+        provider_info = self.PROVIDERS[provider]
+        
+        # Step 2: Get API key
+        print(f"\n📝 Configuring {provider_info['name']}...")
+        print(f"\nTo get your API key:")
+        
+        if provider == 'openrouter':
+            print("  1. Visit https://openrouter.ai/")
+            print("  2. Sign up or log in")
+            print("  3. Go to Keys section")
+            print("  4. Create a new API key")
+        elif provider == 'ollama':
+            print("  1. Visit https://ollama.com/")
+            print("  2. Sign up or log in")
+            print("  3. Go to Settings → API Keys")
+            print("  4. Create a new API key")
+        elif provider == 'huggingface':
+            print("  1. Visit https://huggingface.co/")
+            print("  2. Sign up or log in")
+            print("  3. Go to Settings → Access Tokens")
+            print("  4. Create a new token")
+        elif provider == 'qwen':
+            print("  1. Visit https://dashscope.aliyun.com/")
+            print("  2. Sign up or log in")
+            print("  3. Go to API Keys section")
+            print("  4. Create a new API key")
+        
+        questions = [
+            inquirer.Text('api_key',
+                message=f"Enter your {provider_info['name']} API key",
+            ),
+        ]
+        answers = inquirer.prompt(questions)
+        
+        if not answers or not answers['api_key']:
+            print("Setup cancelled - no API key provided.")
+            return
+        
+        api_key = answers['api_key']
+        
+        # Step 3: Select default model
+        if provider == 'openrouter':
+            model_choices = [
+                ('meta-llama/llama-3.3-70b-instruct (Recommended)', 'meta-llama/llama-3.3-70b-instruct'),
+                ('anthropic/claude-3.5-sonnet', 'anthropic/claude-3.5-sonnet'),
+                ('google/gemini-2.0-flash-exp', 'google/gemini-2.0-flash-exp'),
+                ('Use provider default', None)
+            ]
+        elif provider == 'ollama':
+            model_choices = [
+                ('gpt-oss:120b-cloud (Recommended)', 'gpt-oss:120b-cloud'),
+                ('deepseek-v3.1:671b-cloud', 'deepseek-v3.1:671b-cloud'),
+                ('qwen3-coder:480b-cloud', 'qwen3-coder:480b-cloud'),
+                ('Use provider default', None)
+            ]
+        elif provider == 'huggingface':
+            model_choices = [
+                ('meta-llama/Meta-Llama-3-8B-Instruct (Recommended)', 'meta-llama/Meta-Llama-3-8B-Instruct'),
+                ('mistralai/Mistral-7B-Instruct-v0.2', 'mistralai/Mistral-7B-Instruct-v0.2'),
+                ('microsoft/Phi-3-mini-4k-instruct', 'microsoft/Phi-3-mini-4k-instruct'),
+                ('Use provider default', None)
+            ]
+        elif provider == 'qwen':
+            model_choices = [
+                ('qwen-turbo (Recommended)', 'qwen-turbo'),
+                ('qwen-plus', 'qwen-plus'),
+                ('qwen-max', 'qwen-max'),
+                ('Use provider default', None)
+            ]
+        
+        questions = [
+            inquirer.List('model',
+                message="Select a default model",
+                choices=model_choices,
+            ),
+        ]
+        answers = inquirer.prompt(questions)
+        
+        default_model = answers.get('model') if answers else None
+        
+        # Save configuration
+        self.config.save_config(provider, api_key, default_model)
+        
+        # Step 4: What to do next?
+        print(f"\n✓ {provider_info['name']} configured successfully!\n")
+        
+        questions = [
+            inquirer.List('action',
+                message="What would you like to do next?",
+                choices=[
+                    ('Start interactive chat', 'chat'),
+                    ('Send a test message', 'test'),
+                    ('List available models', 'models'),
+                    ('Exit', 'exit')
+                ],
+            ),
+        ]
+        answers = inquirer.prompt(questions)
+        
+        if not answers:
+            return
+        
+        action = answers['action']
+        
+        if action == 'chat':
+            self.chat_interactive(default_model, provider)
+        elif action == 'test':
+            self.chat("Hello! Please respond with a brief greeting.", default_model, provider=provider)
+        elif action == 'models':
+            self.list_models(provider)
+        
+        print("\n✨ Setup complete! You can now use all CLI commands.\n")
+    
+    def interactive_menu(self):
+        """Interactive main menu for quick actions"""
+        try:
+            import inquirer
+        except ImportError:
+            print("Installing inquirer package for interactive menus...")
+            os.system(f"{sys.executable} -m pip install inquirer")
+            import inquirer
+        
+        config = self.config.load_config()
+        
+        # Check if any provider is configured
+        if not any(p in config for p in self.PROVIDERS.keys()):
+            print("\n❗ No providers configured yet.")
+            questions = [
+                inquirer.Confirm('setup',
+                    message="Would you like to run the setup wizard?",
+                    default=True
+                ),
+            ]
+            answers = inquirer.prompt(questions)
+            
+            if answers and answers['setup']:
+                self.interactive_setup()
+            return
+        
+        print("\n" + "="*60)
+        print("  🐕 Chico Chuwawa AI CLI - Quick Menu")
+        print("  Built by Max van Heerden")
+        print("="*60 + "\n")
+        
+        # Main menu
+        questions = [
+            inquirer.List('action',
+                message="What would you like to do?",
+                choices=[
+                    ('Start interactive chat', 'chat'),
+                    ('Send a quick message', 'message'),
+                    ('List available models', 'models'),
+                    ('Switch provider', 'switch'),
+                    ('Configure new provider', 'config'),
+                    ('View configured providers', 'providers'),
+                    ('Exit', 'exit')
+                ],
+            ),
+        ]
+        answers = inquirer.prompt(questions)
+        
+        if not answers or answers['action'] == 'exit':
+            return
+        
+        action = answers['action']
+        
+        if action == 'chat':
+            # Select provider
+            configured_providers = [(self.PROVIDERS[p]['name'], p) for p in self.PROVIDERS.keys() if p in config]
+            
+            if len(configured_providers) == 1:
+                provider = configured_providers[0][1]
+            else:
+                questions = [
+                    inquirer.List('provider',
+                        message="Select provider",
+                        choices=configured_providers,
+                    ),
+                ]
+                answers = inquirer.prompt(questions)
+                provider = answers['provider'] if answers else None
+            
+            if provider:
+                self.chat_interactive(provider=provider)
+        
+        elif action == 'message':
+            # Get message
+            questions = [
+                inquirer.Text('message',
+                    message="Enter your message",
+                ),
+            ]
+            answers = inquirer.prompt(questions)
+            
+            if answers and answers['message']:
+                self.chat(answers['message'])
+        
+        elif action == 'models':
+            # Select provider
+            configured_providers = [(self.PROVIDERS[p]['name'], p) for p in self.PROVIDERS.keys() if p in config]
+            
+            if len(configured_providers) == 1:
+                provider = configured_providers[0][1]
+            else:
+                questions = [
+                    inquirer.List('provider',
+                        message="Select provider",
+                        choices=configured_providers,
+                    ),
+                ]
+                answers = inquirer.prompt(questions)
+                provider = answers['provider'] if answers else None
+            
+            if provider:
+                self.list_models(provider)
+        
+        elif action == 'switch':
+            configured_providers = [(self.PROVIDERS[p]['name'], p) for p in self.PROVIDERS.keys() if p in config]
+            
+            questions = [
+                inquirer.List('provider',
+                    message="Select provider to switch to",
+                    choices=configured_providers,
+                ),
+            ]
+            answers = inquirer.prompt(questions)
+            
+            if answers:
+                self.switch_provider(answers['provider'])
+        
+        elif action == 'config':
+            self.interactive_setup()
+        
+        elif action == 'providers':
+            self.list_providers()
 
 
 def main():
@@ -423,17 +883,26 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  # Interactive setup wizard
+  chico-cli.py setup
+  
+  # Interactive quick menu
+  chico-cli.py menu
+  
   # Configure OpenRouter
   chico-cli.py config openrouter --api-key YOUR_KEY
   
-  # Configure Ollama Cloud
-  chico-cli.py config ollama --api-key YOUR_KEY
+  # Configure Hugging Face
+  chico-cli.py config huggingface --api-key YOUR_KEY
+  
+  # Configure Qwen
+  chico-cli.py config qwen --api-key YOUR_KEY
   
   # List providers
   chico-cli.py providers
   
   # Switch provider
-  chico-cli.py switch ollama
+  chico-cli.py switch huggingface
   
   # List available models
   chico-cli.py models
@@ -448,15 +917,22 @@ Examples:
   chico-cli.py interactive
   
   # Interactive chat with specific model and provider
-  chico-cli.py interactive --model gpt-oss:120b-cloud --provider ollama
+  chico-cli.py interactive --model qwen-turbo --provider qwen
         """
     )
     
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
     
+    # Setup command (interactive wizard)
+    subparsers.add_parser('setup', help='Interactive setup wizard for beginners')
+    
+    # Menu command (interactive quick menu)
+    subparsers.add_parser('menu', help='Interactive quick menu for common tasks')
+    
     # Config command
     config_parser = subparsers.add_parser('config', help='Configure API credentials')
-    config_parser.add_argument('provider', choices=['openrouter', 'ollama'], help='Provider to configure')
+    config_parser.add_argument('provider', choices=['openrouter', 'ollama', 'huggingface', 'qwen'], 
+                               help='Provider to configure')
     config_parser.add_argument('--api-key', required=True, help='API key')
     config_parser.add_argument('--default-model', help='Default model to use (optional)')
     
@@ -465,33 +941,44 @@ Examples:
     
     # Switch command
     switch_parser = subparsers.add_parser('switch', help='Switch active provider')
-    switch_parser.add_argument('provider', choices=['openrouter', 'ollama'], help='Provider to switch to')
+    switch_parser.add_argument('provider', choices=['openrouter', 'ollama', 'huggingface', 'qwen'], 
+                               help='Provider to switch to')
     
     # Models command
     models_parser = subparsers.add_parser('models', help='List available models')
-    models_parser.add_argument('--provider', choices=['openrouter', 'ollama'], help='Provider to list models from')
+    models_parser.add_argument('--provider', choices=['openrouter', 'ollama', 'huggingface', 'qwen'], 
+                               help='Provider to list models from')
     
     # Chat command
     chat_parser = subparsers.add_parser('chat', help='Send a chat message')
     chat_parser.add_argument('message', help='Message to send')
     chat_parser.add_argument('--model', help='Model to use')
-    chat_parser.add_argument('--provider', choices=['openrouter', 'ollama'], help='Provider to use')
+    chat_parser.add_argument('--provider', choices=['openrouter', 'ollama', 'huggingface', 'qwen'], 
+                            help='Provider to use')
     chat_parser.add_argument('--no-stream', action='store_true', help='Disable streaming response')
     
     # Interactive command
     interactive_parser = subparsers.add_parser('interactive', help='Start interactive chat session')
     interactive_parser.add_argument('--model', help='Model to use')
-    interactive_parser.add_argument('--provider', choices=['openrouter', 'ollama'], help='Provider to use')
+    interactive_parser.add_argument('--provider', choices=['openrouter', 'ollama', 'huggingface', 'qwen'], 
+                                   help='Provider to use')
     
     args = parser.parse_args()
     
-    if not args.command:
-        parser.print_help()
-        sys.exit(0)
-    
     cli = AICLI()
     
-    if args.command == 'config':
+    if not args.command:
+        # If no command given, show interactive menu for beginners
+        cli.interactive_menu()
+        return
+    
+    if args.command == 'setup':
+        cli.interactive_setup()
+    
+    elif args.command == 'menu':
+        cli.interactive_menu()
+    
+    elif args.command == 'config':
         cli.configure(args.provider, args.api_key, args.default_model)
     
     elif args.command == 'providers':
