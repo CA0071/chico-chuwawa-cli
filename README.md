@@ -16,6 +16,13 @@ A powerful command-line interface (CLI) tool for Windows that integrates with **
 - **Streaming Responses**: Real-time response streaming with automatic fallback
 - **Flexible Configuration**: Per-provider API keys and default models
 - **No GPT Lock-in**: Choose your own models from any supported provider
+- **🐕 Chico Chihuahua Animations**: Engaging ASCII animations with "Small Dog, Big Power" theme
+  - Cute Chihuahua ASCII art in multiple poses (sitting, coding, launching, searching, celebrating)
+  - Success animations showing the mighty Chihuahua achieving big feats
+  - Loading spinners with motivational messages
+  - Thematic transitions between operations
+  - Interactive mode welcome animations
+  - Celebration animations for completed tasks
 
 ## 🚀 Supported Providers
 
@@ -54,6 +61,7 @@ This installs:
 - `openai` - OpenAI-compatible API client
 - `ollama` - Ollama Cloud client
 - `requests` - HTTP library
+- `rich` - Beautiful terminal formatting and animations
 
 ## 🔑 Configuration
 
@@ -470,6 +478,53 @@ OpenRouter and Ollama have rate limits. If you hit them:
 - ✅ **Improved Configuration**: Per-provider settings
 - ✅ **Better Error Handling**: Clear error messages
 - ✅ **Model Discovery**: List available models per provider
+- ✅ **🐕 Chico Chihuahua Animations**: Engaging ASCII animations with "Small Dog, Big Power" theme
+
+## 🐕 Chico Chihuahua Animations
+
+The CLI now features delightful ASCII animations starring Chico, a tiny but mighty white apple-head Chihuahua! Each animation embodies the "small dog, big power" theme.
+
+### Animation Features
+
+**ASCII Art Gallery:**
+- 🐕 **Sitting Chico**: Ready and waiting
+- 💻 **Coding Chico**: Programming incredible worlds
+- 🚀 **Launching Chico**: Deploying powerful integrations
+- 🔍 **Searching Chico**: Navigating vast databases
+- ⚡ **Power Chico**: Showing off Chihuahua power
+- ⭐ **Success Chico**: Celebrating achievements
+
+**Interactive Animations:**
+- Welcome banner when starting the CLI
+- Configuration success celebrations
+- Provider switching transitions
+- Model listing with search animations
+- Chat thinking spinners with motivational messages
+- Big feat celebrations (coding worlds, launching integrations, powering searches)
+- Session end animations
+
+**Motivational Messages:**
+Random quotes from Chico:
+- 🐕 "Size doesn't define power!" - Chico
+- ⚡ "Small but fierce!" - Chico the Mighty
+- 💪 "Pocket-sized but powerful!" - Chico
+- 🚀 "Big dreams in a tiny package!" - Chico
+- ✨ "Never underestimate a Chihuahua!" - Chico
+- 🏆 "Tiny paws, giant achievements!" - Chico
+
+### Testing Animations
+
+To see all animations in action:
+
+```bash
+python test_animations.py
+```
+
+This runs a comprehensive showcase of all animation types, perfect for demonstrations!
+
+### Animation Dependencies
+
+Animations are powered by the `rich` library for beautiful terminal output. If `rich` is not installed, the CLI gracefully falls back to simple text output without breaking functionality.
 
 ## 🤝 About
 
