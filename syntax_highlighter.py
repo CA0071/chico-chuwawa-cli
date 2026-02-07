@@ -124,7 +124,8 @@ class SyntaxHighlighter:
             return text
         
         # Pattern to match fenced code blocks with optional language
-        fenced_pattern = r'```(\w+)?\n(.*?)```'
+        # Makes newlines optional to handle both multi-line and single-line code blocks
+        fenced_pattern = r'```(\w+)?\n?(.*?)\n?```'
         
         def replace_fenced(match):
             language = match.group(1)
@@ -162,11 +163,12 @@ class SyntaxHighlighter:
             prefix = parts[0]
             remainder = parts[1] if len(parts) > 1 else ''
             
-            # Extract language if present on the same line
-            lang_match = re.match(r'^(\w+)', remainder)
+            # Extract language if present on the same line, with optional newline
+            lang_match = re.match(r'^(\w+)\n?', remainder)
             if lang_match:
                 in_code_block['language'] = lang_match.group(1)
-                remainder = remainder[len(lang_match.group(1)):]
+                # Remove the language identifier and optional newline
+                remainder = remainder[len(lang_match.group(0)):]
             else:
                 in_code_block['language'] = None
             
@@ -196,6 +198,11 @@ class SyntaxHighlighter:
             return f"{highlighted}```{suffix}", True
         
         # Inside code block - accumulate
+        # Note: We accumulate code and don't display chunks immediately because
+        # syntax highlighting requires the complete code block. This is a trade-off:
+        # we wait until the closing ``` to apply highlighting, providing better
+        # visual output at the cost of slight delay. For very large code blocks,
+        # users will see a pause, but this is acceptable for the improved readability.
         elif in_code_block['active']:
             buffer.append(chunk)
             return '', False
