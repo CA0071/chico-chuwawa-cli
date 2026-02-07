@@ -664,6 +664,35 @@ OpenRouter and Ollama have rate limits. If you hit them:
 - **Ollama Cloud**: [ollama.com/cloud](https://ollama.com/cloud)
 - **Ollama Docs**: [docs.ollama.com](https://docs.ollama.com/)
 
+## 🎉 What's New in v2.1 - Enhanced Edition
+
+### Rich Terminal UI
+- ✅ **Beautiful Tables**: Styled tables with colors and borders using the `rich` library
+- ✅ **Syntax Highlighting**: Code and log syntax highlighting
+- ✅ **Progress Indicators**: Spinners and progress bars for long operations
+- ✅ **Panels**: Organized information display with borders
+- ✅ **Live Updates**: Real-time monitoring dashboards
+
+### Integration Hub (MCP-like)
+- ✅ **Docker Integration**: Manage containers, images, view logs
+- ✅ **Kubernetes Integration**: Monitor pods, deployments, services
+- ✅ **npm Registry**: Search and get info on npm packages
+- ✅ **PyPI Integration**: Search and get info on Python packages
+- ✅ **AWS Support**: Basic S3 and EC2 management
+- ✅ **GCP Support**: Google Cloud Storage management
+- ✅ **Azure Support**: Blob storage management
+- ✅ **MCP Hub**: Central orchestration for all integrations
+
+### Advanced Features
+- ✅ **AI-Powered Auto-Completion**: Intelligent command suggestions
+- ✅ **Smart Defaults**: Context-aware default values
+- ✅ **Real-Time Monitoring**: Live dashboards for services
+- ✅ **Health Checks**: Automatic monitoring of integration health
+- ✅ **Service Discovery**: Automatic detection of available services
+
+### Enhanced CLI
+Use `chico-cli-enhanced.py` to access all new features with rich UI, while `chico_cli.py` remains available for basic usage.
+
 ## 🎉 What's New in v2.0
 
 - ✅ **OpenRouter Integration**: Access 500+ models
@@ -676,13 +705,13 @@ OpenRouter and Ollama have rate limits. If you hit them:
 
 ## 🤝 About
 
-**Chico Chuwawa AI CLI** is designed to give you freedom of choice in AI models. No lock-in to specific providers or models - use what works best for your needs.
+**Chico Chuwawa AI CLI** is designed to give you freedom of choice in AI models and developer tools. No lock-in to specific providers or models - use what works best for your needs.
 
 **Built by**: Max van Heerden  
-**Version**: 2.0.0  
+**Version**: 2.1.0  
 **License**: Free for personal and commercial use
 
 ---
 
-**Chico Chuwawa AI CLI** - Your gateway to hundreds of AI models! 🐕✨
+**Chico Chuwawa AI CLI** - Your gateway to hundreds of AI models and DevOps integrations! 🐕✨
 
