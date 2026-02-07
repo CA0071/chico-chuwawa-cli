@@ -4,15 +4,17 @@ Chico Chuwawa AI CLI
 A powerful command-line interface for interacting with OpenRouter and Ollama Cloud APIs
 
 Built by: Max van Heerden
-Version: 2.0.0
+Version: 3.0.0 - Enhanced Edition
 """
 
 import os
 import sys
 import json
 import argparse
+import time
+import random
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 try:
     from openai import OpenAI
@@ -20,6 +22,390 @@ except ImportError:
     print("Error: openai package not found. Installing...")
     os.system(f"{sys.executable} -m pip install openai")
     from openai import OpenAI
+
+# Import enhanced features
+try:
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.progress import Progress, SpinnerColumn, TextColumn
+    from rich.markdown import Markdown
+    from rich.table import Table
+    from rich import print as rprint
+    RICH_AVAILABLE = True
+except ImportError:
+    RICH_AVAILABLE = False
+    Console = None
+
+try:
+    import pyfiglet
+    FIGLET_AVAILABLE = True
+except ImportError:
+    FIGLET_AVAILABLE = False
+
+try:
+    from duckduckgo_search import DDGS
+    WEB_SEARCH_AVAILABLE = True
+except ImportError:
+    WEB_SEARCH_AVAILABLE = False
+
+try:
+    import git
+    GIT_AVAILABLE = True
+except ImportError:
+    GIT_AVAILABLE = False
+
+
+# Chihuahua ASCII Art and Animations
+CHICO_ASCII_ART = [
+    r"""
+    /\_/\  
+   ( o.o ) 
+    > ^ <  Woof! I'm Chico!
+   /|   |\
+  (_|   |_)
+    """,
+    r"""
+      /\_/\  
+     ( ^.^ ) 
+      > * <  Let's go!
+     /|   |\
+    (_|   |_)
+    """,
+    r"""
+    /\_/\  
+   ( -.-)zzz
+    > ^ <  Thinking...
+   /|   |\
+  (_|   |_)
+    """
+]
+
+CHICO_QUOTES = [
+    "🐕 Woof! Ready to fetch some answers!",
+    "🐾 Small dog, BIG intelligence!",
+    "✨ Chico is on the case!",
+    "🦴 Let me dig into that for you!",
+    "🎾 Fetching the best response...",
+    "🐶 Arf! I've got this!",
+    "💪 Tiny but mighty!",
+    "🌟 Chico to the rescue!"
+]
+
+
+class GamificationSystem:
+    """Gamification system for tracking user achievements and progress"""
+    
+    def __init__(self, config_dir: Path):
+        self.progress_file = config_dir / 'chico_progress.json'
+        self.load_progress()
+    
+    def load_progress(self):
+        """Load user progress and achievements"""
+        if self.progress_file.exists():
+            with open(self.progress_file, 'r') as f:
+                data = json.load(f)
+        else:
+            data = {
+                'level': 1,
+                'xp': 0,
+                'commands_used': 0,
+                'chats_completed': 0,
+                'workflows_completed': 0,
+                'achievements': [],
+                'bones_collected': 0
+            }
+        
+        self.level = data.get('level', 1)
+        self.xp = data.get('xp', 0)
+        self.commands_used = data.get('commands_used', 0)
+        self.chats_completed = data.get('chats_completed', 0)
+        self.workflows_completed = data.get('workflows_completed', 0)
+        self.achievements = data.get('achievements', [])
+        self.bones_collected = data.get('bones_collected', 0)
+    
+    def save_progress(self):
+        """Save user progress"""
+        data = {
+            'level': self.level,
+            'xp': self.xp,
+            'commands_used': self.commands_used,
+            'chats_completed': self.chats_completed,
+            'workflows_completed': self.workflows_completed,
+            'achievements': self.achievements,
+            'bones_collected': self.bones_collected
+        }
+        with open(self.progress_file, 'w') as f:
+            json.dump(data, f, indent=2)
+    
+    def add_xp(self, amount: int, reason: str = ""):
+        """Add XP and check for level ups"""
+        self.xp += amount
+        self.commands_used += 1
+        
+        # Level up logic: each level requires level * 100 XP
+        while self.xp >= self.level * 100:
+            self.xp -= self.level * 100
+            self.level += 1
+            self.show_level_up()
+        
+        self.save_progress()
+    
+    def show_level_up(self):
+        """Display level up message"""
+        if RICH_AVAILABLE:
+            console = Console()
+            console.print(f"\n[bold yellow]🎉 LEVEL UP! 🎉[/bold yellow]")
+            console.print(f"[green]Chico is now level {self.level}![/green]")
+            console.print(f"[cyan]🦴 Bone reward: +{self.level} bones![/cyan]\n")
+        else:
+            print(f"\n🎉 LEVEL UP! Chico is now level {self.level}! 🦴 +{self.level} bones!\n")
+        
+        self.bones_collected += self.level
+    
+    def add_achievement(self, achievement: str):
+        """Add a new achievement"""
+        if achievement not in self.achievements:
+            self.achievements.append(achievement)
+            if RICH_AVAILABLE:
+                console = Console()
+                console.print(f"\n[bold green]🏆 Achievement Unlocked: {achievement}![/bold green]\n")
+            else:
+                print(f"\n🏆 Achievement: {achievement}!\n")
+            self.save_progress()
+    
+    def show_stats(self):
+        """Display user stats"""
+        if RICH_AVAILABLE:
+            console = Console()
+            table = Table(title="🐕 Chico's Stats", show_header=True, header_style="bold magenta")
+            table.add_column("Stat", style="cyan")
+            table.add_column("Value", style="green")
+            
+            table.add_row("Level", str(self.level))
+            table.add_row("XP", f"{self.xp}/{self.level * 100}")
+            table.add_row("Commands Used", str(self.commands_used))
+            table.add_row("Chats Completed", str(self.chats_completed))
+            table.add_row("Workflows Done", str(self.workflows_completed))
+            table.add_row("🦴 Bones", str(self.bones_collected))
+            table.add_row("🏆 Achievements", str(len(self.achievements)))
+            
+            console.print(table)
+            
+            if self.achievements:
+                console.print("\n[bold]Achievements:[/bold]")
+                for achievement in self.achievements:
+                    console.print(f"  🏆 {achievement}")
+        else:
+            print(f"\n🐕 Chico's Stats:")
+            print(f"  Level: {self.level}")
+            print(f"  XP: {self.xp}/{self.level * 100}")
+            print(f"  Commands: {self.commands_used}")
+            print(f"  Chats: {self.chats_completed}")
+            print(f"  Workflows: {self.workflows_completed}")
+            print(f"  🦴 Bones: {self.bones_collected}")
+            print(f"  🏆 Achievements: {len(self.achievements)}")
+            if self.achievements:
+                print("\nAchievements:")
+                for a in self.achievements:
+                    print(f"  🏆 {a}")
+
+
+class WebSearcher:
+    """Web search integration for enhanced responses"""
+    
+    def __init__(self):
+        self.search_available = WEB_SEARCH_AVAILABLE
+    
+    def search(self, query: str, max_results: int = 5) -> List[Dict[str, str]]:
+        """Search the web and return results"""
+        if not self.search_available:
+            return []
+        
+        try:
+            with DDGS() as ddgs:
+                results = []
+                for r in ddgs.text(query, max_results=max_results):
+                    results.append({
+                        'title': r.get('title', ''),
+                        'url': r.get('href', ''),
+                        'snippet': r.get('body', '')
+                    })
+                return results
+        except Exception as e:
+            print(f"Search error: {e}")
+            return []
+
+
+class RepoAnalyzer:
+    """Analyze repository structure and content"""
+    
+    def __init__(self):
+        self.git_available = GIT_AVAILABLE
+    
+    def analyze_repo(self, path: str = ".") -> Dict[str, Any]:
+        """Analyze a repository and return structured information"""
+        repo_info = {
+            'path': path,
+            'is_git_repo': False,
+            'files': [],
+            'structure': {},
+            'languages': {},
+            'total_files': 0
+        }
+        
+        # Check if it's a git repo
+        if self.git_available:
+            try:
+                repo = git.Repo(path, search_parent_directories=True)
+                repo_info['is_git_repo'] = True
+                repo_info['branch'] = repo.active_branch.name
+                repo_info['remote'] = repo.remotes.origin.url if repo.remotes else None
+            except:
+                pass
+        
+        # Analyze file structure
+        path_obj = Path(path)
+        if path_obj.exists():
+            # Count files by extension
+            for file_path in path_obj.rglob('*'):
+                if file_path.is_file():
+                    repo_info['total_files'] += 1
+                    ext = file_path.suffix.lower()
+                    if ext:
+                        repo_info['languages'][ext] = repo_info['languages'].get(ext, 0) + 1
+                    
+                    # Add to file list (limit to prevent overwhelming output)
+                    if len(repo_info['files']) < 50:
+                        repo_info['files'].append(str(file_path.relative_to(path_obj)))
+        
+        return repo_info
+    
+    def get_repo_context(self, path: str = ".") -> str:
+        """Get a text summary of the repository"""
+        info = self.analyze_repo(path)
+        
+        context = f"Repository at: {info['path']}\n"
+        if info['is_git_repo']:
+            context += f"Git branch: {info.get('branch', 'unknown')}\n"
+        context += f"Total files: {info['total_files']}\n"
+        
+        if info['languages']:
+            context += "File types:\n"
+            for ext, count in sorted(info['languages'].items(), key=lambda x: x[1], reverse=True)[:10]:
+                context += f"  {ext}: {count} files\n"
+        
+        return context
+
+
+class WorkflowEngine:
+    """Multi-step workflow automation engine"""
+    
+    def __init__(self, cli_instance):
+        self.cli = cli_instance
+        self.workflows = {
+            'code-review': {
+                'name': 'Code Review Assistant',
+                'steps': [
+                    'Analyze repository structure',
+                    'Identify main code files',
+                    'Review code quality',
+                    'Provide improvement suggestions'
+                ]
+            },
+            'debug': {
+                'name': 'Debug Assistant',
+                'steps': [
+                    'Understand the error',
+                    'Search for similar issues',
+                    'Analyze potential causes',
+                    'Suggest fixes'
+                ]
+            },
+            'research': {
+                'name': 'Research Assistant',
+                'steps': [
+                    'Search web for information',
+                    'Analyze results',
+                    'Synthesize findings',
+                    'Provide summary'
+                ]
+            }
+        }
+    
+    def run_workflow(self, workflow_name: str, context: str, model: Optional[str] = None):
+        """Execute a multi-step workflow"""
+        if workflow_name not in self.workflows:
+            print(f"Unknown workflow: {workflow_name}")
+            print(f"Available: {', '.join(self.workflows.keys())}")
+            return
+        
+        workflow = self.workflows[workflow_name]
+        
+        if RICH_AVAILABLE:
+            console = Console()
+            console.print(f"\n[bold cyan]🔄 Starting Workflow: {workflow['name']}[/bold cyan]\n")
+        else:
+            print(f"\n🔄 Starting Workflow: {workflow['name']}\n")
+        
+        results = []
+        
+        # Execute each step
+        for i, step in enumerate(workflow['steps'], 1):
+            if RICH_AVAILABLE:
+                console.print(f"[yellow]Step {i}/{len(workflow['steps'])}: {step}[/yellow]")
+            else:
+                print(f"Step {i}/{len(workflow['steps'])}: {step}")
+            
+            # Build step-specific prompt
+            step_prompt = f"{context}\n\nTask: {step}\nPrevious context: {' '.join(results[-2:]) if results else 'None'}"
+            
+            # Execute step
+            try:
+                self.cli.initialize_client()
+                provider_info = self.cli.PROVIDERS[self.cli.current_provider]
+                
+                if not model:
+                    provider_config = self.cli.config.get_provider_config(self.cli.current_provider)
+                    model = provider_config.get('default_model', provider_info['default_model'])
+                
+                if self.cli.current_provider == 'ollama':
+                    response = self.cli.client.chat(model, messages=[{'role': 'user', 'content': step_prompt}], stream=False)
+                    result = response.get('message', {}).get('content', '')
+                else:
+                    response = self.cli.client.chat.completions.create(
+                        model=model,
+                        messages=[{"role": "user", "content": step_prompt}],
+                        stream=False
+                    )
+                    result = response.choices[0].message.content
+                
+                results.append(result)
+                
+                if RICH_AVAILABLE:
+                    console.print(Panel(result[:500] + ("..." if len(result) > 500 else ""), 
+                                      title=f"Step {i} Result", border_style="green"))
+                else:
+                    print(f"Result: {result[:300]}...")
+                
+                time.sleep(1)  # Brief pause between steps
+                
+            except Exception as e:
+                print(f"Error in step {i}: {e}")
+                break
+        
+        if RICH_AVAILABLE:
+            console.print(f"\n[bold green]✅ Workflow Complete![/bold green]\n")
+        else:
+            print("\n✅ Workflow Complete!\n")
+        
+        # Award XP for workflow completion
+        if hasattr(self.cli, 'gamification'):
+            self.cli.gamification.workflows_completed += 1
+            self.cli.gamification.add_xp(50, "workflow completion")
+            
+            # Check for first workflow achievement
+            if self.cli.gamification.workflows_completed == 1:
+                self.cli.gamification.add_achievement("First Workflow Master")
 
 
 class APIConfig:
@@ -35,6 +421,9 @@ class APIConfig:
         self.config_dir = config_dir
         self.config_file = config_dir / 'config.json'
         self.config_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Initialize gamification system
+        self.gamification = GamificationSystem(config_dir)
     
     def save_config(self, provider: str, api_key: str, default_model: Optional[str] = None):
         """Save API configuration for a provider"""
@@ -98,6 +487,37 @@ class AICLI:
         self.config = APIConfig()
         self.client = None
         self.current_provider = None
+        self.gamification = self.config.gamification
+        self.web_searcher = WebSearcher()
+        self.repo_analyzer = RepoAnalyzer()
+        self.workflow_engine = WorkflowEngine(self)
+        self.console = Console() if RICH_AVAILABLE else None
+    
+    def show_welcome(self):
+        """Display welcome message with Chico theme"""
+        if FIGLET_AVAILABLE:
+            try:
+                figlet = pyfiglet.figlet_format("CHICO CLI", font="slant")
+                if RICH_AVAILABLE:
+                    self.console.print(f"[bold cyan]{figlet}[/bold cyan]")
+                else:
+                    print(figlet)
+            except:
+                pass
+        
+        # Show ASCII art
+        art = random.choice(CHICO_ASCII_ART)
+        quote = random.choice(CHICO_QUOTES)
+        
+        if RICH_AVAILABLE:
+            self.console.print(Panel(f"[yellow]{art}[/yellow]\n[green]{quote}[/green]",
+                                    title="🐕 Chico Chuwawa AI CLI v3.0", 
+                                    border_style="cyan"))
+        else:
+            print("\n" + "="*60)
+            print(art)
+            print(quote)
+            print("="*60 + "\n")
     
     def initialize_client(self, provider: Optional[str] = None):
         """Initialize OpenAI-compatible client with configuration"""
@@ -243,7 +663,8 @@ class AICLI:
             print(f"\nNote: Visit {provider_info['name']} website for full model list.")
             print()
     
-    def chat(self, message: str, model: Optional[str] = None, stream: bool = True, provider: Optional[str] = None):
+    def chat(self, message: str, model: Optional[str] = None, stream: bool = True, provider: Optional[str] = None, 
+             web_search: bool = False, repo_context: bool = False):
         """Send a chat message to the API"""
         self.initialize_client(provider)
         
@@ -254,20 +675,48 @@ class AICLI:
             provider_config = self.config.get_provider_config(self.current_provider)
             model = provider_config.get('default_model', provider_info['default_model'])
         
-        print(f"\n💬 Sending message to {model} via {provider_info['name']}...\n")
+        # Enhance message with web search if requested
+        enhanced_message = message
+        if web_search and self.web_searcher.search_available:
+            if RICH_AVAILABLE:
+                self.console.print("[yellow]🔍 Searching the web...[/yellow]")
+            else:
+                print("🔍 Searching the web...")
+            
+            results = self.web_searcher.search(message, max_results=3)
+            if results:
+                search_context = "\n\nWeb search results:\n"
+                for i, r in enumerate(results, 1):
+                    search_context += f"{i}. {r['title']}\n   {r['snippet']}\n   URL: {r['url']}\n\n"
+                enhanced_message = f"{message}\n{search_context}\nPlease use the above web search results to provide an informed answer."
+        
+        # Add repository context if requested
+        if repo_context:
+            if RICH_AVAILABLE:
+                self.console.print("[yellow]📁 Analyzing repository...[/yellow]")
+            else:
+                print("📁 Analyzing repository...")
+            
+            repo_info = self.repo_analyzer.get_repo_context()
+            enhanced_message = f"Repository Context:\n{repo_info}\n\nUser Question: {enhanced_message}"
+        
+        if RICH_AVAILABLE:
+            self.console.print(f"\n[cyan]💬 Sending message to {model} via {provider_info['name']}...[/cyan]\n")
+        else:
+            print(f"\n💬 Sending message to {model} via {provider_info['name']}...\n")
         
         try:
             if self.current_provider == 'ollama':
                 # Use Ollama client
                 if stream:
                     print("Response: ", end="", flush=True)
-                    for part in self.client.chat(model, messages=[{'role': 'user', 'content': message}], stream=True):
+                    for part in self.client.chat(model, messages=[{'role': 'user', 'content': enhanced_message}], stream=True):
                         content = part.get('message', {}).get('content', '')
                         if content:
                             print(content, end="", flush=True)
                     print("\n")
                 else:
-                    response = self.client.chat(model, messages=[{'role': 'user', 'content': message}], stream=False)
+                    response = self.client.chat(model, messages=[{'role': 'user', 'content': enhanced_message}], stream=False)
                     print("Response:", response.get('message', {}).get('content', ''))
                     print()
             else:
@@ -276,7 +725,7 @@ class AICLI:
                     try:
                         response = self.client.chat.completions.create(
                             model=model,
-                            messages=[{"role": "user", "content": message}],
+                            messages=[{"role": "user", "content": enhanced_message}],
                             stream=True
                         )
                         
@@ -290,7 +739,7 @@ class AICLI:
                             # Fallback to non-streaming
                             response = self.client.chat.completions.create(
                                 model=model,
-                                messages=[{"role": "user", "content": message}],
+                                messages=[{"role": "user", "content": enhanced_message}],
                                 stream=False
                             )
                             print("Response:", response.choices[0].message.content)
@@ -300,11 +749,24 @@ class AICLI:
                 else:
                     response = self.client.chat.completions.create(
                         model=model,
-                        messages=[{"role": "user", "content": message}],
+                        messages=[{"role": "user", "content": enhanced_message}],
                         stream=False
                     )
                     print("Response:", response.choices[0].message.content)
                     print()
+            
+            # Award XP for chat completion
+            self.gamification.chats_completed += 1
+            xp_earned = 10 + (5 if web_search else 0) + (5 if repo_context else 0)
+            self.gamification.add_xp(xp_earned, "chat completion")
+            
+            # Check for achievements
+            if self.gamification.chats_completed == 1:
+                self.gamification.add_achievement("First Chat")
+            if web_search and "Web Explorer" not in self.gamification.achievements:
+                self.gamification.add_achievement("Web Explorer")
+            if repo_context and "Code Navigator" not in self.gamification.achievements:
+                self.gamification.add_achievement("Code Navigator")
         
         except Exception as e:
             print(f"Error: {e}")
@@ -321,13 +783,24 @@ class AICLI:
             provider_config = self.config.get_provider_config(self.current_provider)
             model = provider_config.get('default_model', provider_info['default_model'])
         
-        print("\n" + "="*60)
-        print("  🐕 Chico Chuwawa AI CLI - Built by Max van Heerden")
-        print("="*60)
-        print(f"\n🤖 Interactive Chat Mode")
-        print(f"Provider: {provider_info['name']}")
-        print(f"Model: {model}")
-        print("Type 'exit' or 'quit' to end the session\n")
+        # Show welcome
+        self.show_welcome()
+        
+        if RICH_AVAILABLE:
+            self.console.print("[bold cyan]🤖 Interactive Chat Mode[/bold cyan]")
+            self.console.print(f"[green]Provider:[/green] {provider_info['name']}")
+            self.console.print(f"[green]Model:[/green] {model}")
+            self.console.print(f"[green]Level:[/green] {self.gamification.level} | [yellow]XP:[/yellow] {self.gamification.xp}/{self.gamification.level * 100} | [cyan]🦴:[/cyan] {self.gamification.bones_collected}")
+            self.console.print("[dim]Type 'exit' or 'quit' to end, 'stats' for your progress, 'help' for commands[/dim]\n")
+        else:
+            print("\n" + "="*60)
+            print("  🐕 Chico Chuwawa AI CLI - Built by Max van Heerden")
+            print("="*60)
+            print(f"\n🤖 Interactive Chat Mode")
+            print(f"Provider: {provider_info['name']}")
+            print(f"Model: {model}")
+            print(f"Level: {self.gamification.level} | XP: {self.gamification.xp}/{self.gamification.level * 100}")
+            print("Type 'exit' or 'quit' to end, 'stats' for progress\n")
         
         messages = []
         use_streaming = True
@@ -337,8 +810,19 @@ class AICLI:
                 user_input = input("You: ").strip()
                 
                 if user_input.lower() in ['exit', 'quit']:
-                    print("Goodbye! 👋")
+                    if RICH_AVAILABLE:
+                        self.console.print("\n[yellow]🐾 Goodbye! Chico will miss you![/yellow]")
+                    else:
+                        print("\n🐾 Goodbye! Chico will miss you!")
                     break
+                
+                if user_input.lower() == 'stats':
+                    self.gamification.show_stats()
+                    continue
+                
+                if user_input.lower() == 'help':
+                    self.show_interactive_help()
+                    continue
                 
                 if not user_input:
                     continue
@@ -387,6 +871,17 @@ class AICLI:
                     
                     print("\n")
                     messages.append({"role": "assistant", "content": assistant_message})
+                    
+                    # Award XP
+                    self.gamification.chats_completed += 1
+                    self.gamification.add_xp(10, "interactive chat")
+                    
+                    # Show random Chico encouragement occasionally
+                    if random.random() < 0.1:  # 10% chance
+                        if RICH_AVAILABLE:
+                            self.console.print(f"[dim italic]{random.choice(CHICO_QUOTES)}[/dim italic]")
+                        else:
+                            print(f"{random.choice(CHICO_QUOTES)}")
                 
                 except Exception as api_error:
                     if "streaming" in str(api_error).lower() and use_streaming:
@@ -410,16 +905,49 @@ class AICLI:
                         raise
             
             except KeyboardInterrupt:
-                print("\n\nGoodbye! 👋")
+                if RICH_AVAILABLE:
+                    self.console.print("\n\n[yellow]🐾 Goodbye! Chico will miss you![/yellow]")
+                else:
+                    print("\n\n🐾 Goodbye! Chico will miss you!")
                 break
             except Exception as e:
                 print(f"\nError: {e}\n")
+    
+    def show_interactive_help(self):
+        """Show help for interactive mode"""
+        if RICH_AVAILABLE:
+            help_text = """
+[bold cyan]Interactive Mode Commands:[/bold cyan]
+
+[green]exit/quit[/green] - Exit interactive mode
+[green]stats[/green] - Show your level, XP, and achievements
+[green]help[/green] - Show this help message
+
+[bold yellow]Tips:[/bold yellow]
+• Chat naturally with the AI
+• Build on previous messages in the conversation
+• Earn XP and level up as you chat!
+• Collect bones 🦴 when you level up
+            """
+            self.console.print(Panel(help_text, border_style="cyan"))
+        else:
+            print("""
+Interactive Mode Commands:
+  exit/quit - Exit interactive mode
+  stats - Show your level, XP, and achievements  
+  help - Show this help message
+
+Tips:
+• Chat naturally with the AI
+• Build on previous messages
+• Earn XP and level up!
+            """)
 
 
 def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(
-        description='Chico Chuwawa AI CLI - Built by Max van Heerden',
+        description='Chico Chuwawa AI CLI v3.0 - Built by Max van Heerden',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -441,14 +969,26 @@ Examples:
   # Send a single message
   chico-cli.py chat "What is the capital of France?"
   
+  # Chat with web search
+  chico-cli.py chat "Latest AI news" --web-search
+  
+  # Chat with repository context
+  chico-cli.py chat "Review this code" --repo-context
+  
   # Use a specific model
   chico-cli.py chat "Explain quantum computing" --model meta-llama/llama-3.3-70b-instruct
   
   # Start interactive chat
   chico-cli.py interactive
   
-  # Interactive chat with specific model and provider
-  chico-cli.py interactive --model gpt-oss:120b-cloud --provider ollama
+  # Run a workflow
+  chico-cli.py workflow research "Learn about quantum computing"
+  
+  # Check your stats and achievements
+  chico-cli.py stats
+  
+  # Analyze repository
+  chico-cli.py analyze-repo
         """
     )
     
@@ -477,11 +1017,32 @@ Examples:
     chat_parser.add_argument('--model', help='Model to use')
     chat_parser.add_argument('--provider', choices=['openrouter', 'ollama'], help='Provider to use')
     chat_parser.add_argument('--no-stream', action='store_true', help='Disable streaming response')
+    chat_parser.add_argument('--web-search', action='store_true', help='Enable web search')
+    chat_parser.add_argument('--repo-context', action='store_true', help='Include repository context')
     
     # Interactive command
     interactive_parser = subparsers.add_parser('interactive', help='Start interactive chat session')
     interactive_parser.add_argument('--model', help='Model to use')
     interactive_parser.add_argument('--provider', choices=['openrouter', 'ollama'], help='Provider to use')
+    
+    # Workflow command
+    workflow_parser = subparsers.add_parser('workflow', help='Run a multi-step workflow')
+    workflow_parser.add_argument('workflow_type', choices=['code-review', 'debug', 'research'], 
+                                  help='Type of workflow to run')
+    workflow_parser.add_argument('context', help='Context or question for the workflow')
+    workflow_parser.add_argument('--model', help='Model to use')
+    
+    # Stats command
+    subparsers.add_parser('stats', help='Show your stats and achievements')
+    
+    # Analyze repo command
+    analyze_parser = subparsers.add_parser('analyze-repo', help='Analyze repository structure')
+    analyze_parser.add_argument('--path', default='.', help='Path to repository (default: current directory)')
+    
+    # Web search command
+    search_parser = subparsers.add_parser('search', help='Search the web')
+    search_parser.add_argument('query', help='Search query')
+    search_parser.add_argument('--max-results', type=int, default=5, help='Maximum results to show')
     
     args = parser.parse_args()
     
@@ -504,10 +1065,79 @@ Examples:
         cli.list_models(args.provider)
     
     elif args.command == 'chat':
-        cli.chat(args.message, args.model, stream=not args.no_stream, provider=args.provider)
+        cli.chat(args.message, args.model, stream=not args.no_stream, provider=args.provider,
+                web_search=args.web_search, repo_context=args.repo_context)
     
     elif args.command == 'interactive':
         cli.chat_interactive(args.model, args.provider)
+    
+    elif args.command == 'workflow':
+        cli.workflow_engine.run_workflow(args.workflow_type, args.context, args.model)
+    
+    elif args.command == 'stats':
+        cli.gamification.show_stats()
+    
+    elif args.command == 'analyze-repo':
+        repo_info = cli.repo_analyzer.analyze_repo(args.path)
+        if RICH_AVAILABLE:
+            console = Console()
+            table = Table(title=f"📁 Repository Analysis: {args.path}")
+            table.add_column("Property", style="cyan")
+            table.add_column("Value", style="green")
+            
+            table.add_row("Path", repo_info['path'])
+            table.add_row("Git Repository", "Yes" if repo_info['is_git_repo'] else "No")
+            if repo_info['is_git_repo']:
+                table.add_row("Branch", repo_info.get('branch', 'N/A'))
+            table.add_row("Total Files", str(repo_info['total_files']))
+            
+            console.print(table)
+            
+            if repo_info['languages']:
+                console.print("\n[bold]File Types:[/bold]")
+                for ext, count in sorted(repo_info['languages'].items(), key=lambda x: x[1], reverse=True)[:10]:
+                    console.print(f"  {ext}: {count} files")
+        else:
+            print(f"\n📁 Repository Analysis: {args.path}")
+            print(f"  Path: {repo_info['path']}")
+            print(f"  Git Repository: {'Yes' if repo_info['is_git_repo'] else 'No'}")
+            if repo_info['is_git_repo']:
+                print(f"  Branch: {repo_info.get('branch', 'N/A')}")
+            print(f"  Total Files: {repo_info['total_files']}")
+            if repo_info['languages']:
+                print("\nFile Types:")
+                for ext, count in sorted(repo_info['languages'].items(), key=lambda x: x[1], reverse=True)[:10]:
+                    print(f"  {ext}: {count} files")
+    
+    elif args.command == 'search':
+        if not WEB_SEARCH_AVAILABLE:
+            print("Error: Web search requires duckduckgo-search package")
+            print("Install with: pip install duckduckgo-search")
+            sys.exit(1)
+        
+        if RICH_AVAILABLE:
+            console = Console()
+            console.print(f"[yellow]🔍 Searching: {args.query}[/yellow]\n")
+        else:
+            print(f"🔍 Searching: {args.query}\n")
+        
+        results = cli.web_searcher.search(args.query, args.max_results)
+        
+        if results:
+            for i, r in enumerate(results, 1):
+                if RICH_AVAILABLE:
+                    console.print(f"[bold cyan]{i}. {r['title']}[/bold cyan]")
+                    console.print(f"[dim]{r['url']}[/dim]")
+                    console.print(f"{r['snippet']}\n")
+                else:
+                    print(f"{i}. {r['title']}")
+                    print(f"   {r['url']}")
+                    print(f"   {r['snippet']}\n")
+        else:
+            print("No results found.")
+        
+        # Award XP for using search
+        cli.gamification.add_xp(5, "web search")
 
 
 if __name__ == '__main__':
