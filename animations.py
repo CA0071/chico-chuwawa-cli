@@ -166,12 +166,11 @@ def animated_working(message="Working...", duration=1.5):
     frames = CHICO_WORKING_FRAMES
     iterations = int(duration / (len(frames) * 0.3))
     
-    for _ in range(max(1, iterations)):
-        for art, status in frames:
-            console.clear()
-            console.print(f"[cyan]{art}[/cyan]")
-            console.print(f"[bold yellow]{message} - {status}[/bold yellow]")
-            time.sleep(0.3)
+    # Note: Animation disabled to avoid clearing terminal. Use static art instead.
+    # If needed, this could be re-enabled with in-place updates using rich.live
+    art, status = frames[0]
+    console.print(f"[cyan]{art}[/cyan]")
+    console.print(f"[bold yellow]{message} - {status}[/bold yellow]")
 
 
 def success_animation(message="Success!"):
