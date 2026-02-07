@@ -1,6 +1,6 @@
 # Chico Chuwawa AI CLI - PowerShell Installation Script
 # Built by Max van Heerden
-# Version 2.0.0
+# Version 3.0.0
 
 Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host "  🐕 Chico Chuwawa AI CLI Installer" -ForegroundColor Cyan

@@ -19,6 +19,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
 # Virtual environments
 venv/
@@ -41,4 +42,30 @@ config.json
 
 # PyInstaller
 *.spec
+
+# Backup files
+*.bak
+*~
+*.backup
+chico-cli-v2.py.bak
+chico-cli-enhanced.py
+README-v2.md.bak
+README-v3.md
+
+# Test files
+test_*.py
+*_test.py
+
+# Logs
+*.log
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary
+tmp/
+temp/
+.tmp/
 

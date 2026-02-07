@@ -1,194 +1,265 @@
-# Chico Chuwawa AI CLI
+# Chico Chuwawa AI CLI v3.0
 
 ![Chico Chuwawa Logo](chico-logo.png)
 
 **Built by Max van Heerden**  
-**Version 2.0.0**
+**Version 3.0.0**
 
-A powerful command-line interface (CLI) tool for Windows that integrates with **OpenRouter** and **Ollama Cloud** APIs. Access hundreds of AI models from multiple providers through a single, easy-to-use interface.
+A comprehensive command-line interface (CLI) tool with multi-provider AI support, beautiful animations, persistent chat history, internet search, MCP server integrations, desktop app connections, WhatsApp integration, and more!
 
-## 🌟 Features
+## 🌟 What's New in v3.0
 
-- **Multi-Provider Support**: OpenRouter and Ollama Cloud integration
-- **Hundreds of Models**: Access models from OpenAI, Anthropic, Google, Meta, Mistral, DeepSeek, and more
-- **Easy Provider Switching**: Switch between providers with a single command
-- **Interactive Chat Mode**: Multi-turn conversations with context
-- **Streaming Responses**: Real-time response streaming with automatic fallback
-- **Flexible Configuration**: Per-provider API keys and default models
-- **No GPT Lock-in**: Choose your own models from any supported provider
+### 🎨 Visual Enhancements
+- **ASCII Chihuahua Animation** - Animated welcome screen with Chihuahua mascot
+- **Coding-Themed Loading Messages** - Fun, developer-focused waiting indicators
+- **Syntax Highlighting** - Automatic code block highlighting with Pygments
+- **Rich Console Output** - Beautiful, colorful terminal interface
 
-## 🚀 Supported Providers
+### 💾 Persistent Features
+- **Chat History** - All conversations saved to SQLite database
+- **Session Management** - Resume previous chats anytime
+- **Builder Markers** - Mark important points in conversations
+- **Search History** - Find previous conversations by content
 
-### OpenRouter
-Access 500+ models from multiple providers:
-- **Anthropic**: Claude 3.5 Sonnet, Claude 3 Opus
-- **Google**: Gemini 2.0 Flash, Gemini Pro
-- **Meta**: Llama 3.3 70B, Llama 3.1 405B
-- **Mistral**: Mistral Large, Mixtral
-- **DeepSeek**: DeepSeek V3
-- **Qwen**: Qwen 2.5 72B
-- And many more!
+### 🔗 Integrations & Connections
+- **MCP Servers** - GitHub, Railway, Vercel, Office 365, Zoho (CRM/Desk/Invoice)
+- **Desktop Apps** - Connect to Manus AI, DeepSeek, Claude, ChatGPT
+- **Internet Search** - DuckDuckGo integration for coding solutions
+- **WhatsApp** - QR code connection for monitoring and prompting
 
-### Ollama Cloud
-Cloud-hosted models without local GPU:
-- `gpt-oss:120b-cloud`
-- `deepseek-v3.1:671b-cloud`
-- `gpt-oss:20b-cloud`
-- `kimi-k2:1t-cloud`
-- `qwen3-coder:480b-cloud`
-- `glm-4.6:cloud`
+### 🌍 Cross-Platform Installation
+- **Linux/Unix** - One-line installer with global `chico` command
+- **Windows** - PowerShell installer with PATH configuration
+- **pip** - Install via `pip install chico-cli`
+- **All Platforms** - Works on Windows, macOS, Linux, Ubuntu, Debian
 
 ## 📦 Installation
 
+### Quick Install (Linux/Unix/macOS)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/CA0071/chico-chuwawa-cli/main/install.sh | bash
+```
+
+Or download and run:
+```bash
+git clone https://github.com/CA0071/chico-chuwawa-cli.git
+cd chico-chuwawa-cli
+chmod +x install.sh
+./install.sh
+```
+
+### Quick Install (Windows PowerShell)
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/CA0071/chico-chuwawa-cli/main/install.ps1 | iex
+```
+
+Or download and run:
+```powershell
+git clone https://github.com/CA0071/chico-chuwawa-cli.git
+cd chico-chuwawa-cli
+powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+### Install via pip (All Platforms)
+
+```bash
+pip install git+https://github.com/CA0071/chico-chuwawa-cli.git
+```
+
 ### Prerequisites
 - Python 3.7 or higher
-- Windows, macOS, or Linux
+- pip (Python package manager)
 
-### Install Dependencies
+## 🚀 Quick Start
 
-```bash
-pip install -r requirements.txt
-```
-
-This installs:
-- `openai` - OpenAI-compatible API client
-- `ollama` - Ollama Cloud client
-- `requests` - HTTP library
-
-## 🔑 Configuration
-
-### Get Your API Keys
-
-#### OpenRouter
-1. Visit [openrouter.ai](https://openrouter.ai/)
-2. Sign up or log in
-3. Go to Keys section
-4. Create a new API key
-5. Copy your key (starts with `sk-or-v1-...`)
-
-#### Ollama Cloud
-1. Visit [ollama.com](https://ollama.com/)
-2. Sign up or log in
-3. Go to [API keys](https://ollama.com/settings/keys)
-4. Create a new API key
-5. Copy your key
-
-### Configure Providers
-
-#### Configure OpenRouter
+### 1. Configure Your AI Provider
 
 ```bash
-python chico-cli.py config openrouter --api-key YOUR_OPENROUTER_KEY
+# OpenRouter (recommended - 500+ models)
+chico config openrouter --api-key YOUR_OPENROUTER_KEY
+
+# Ollama Cloud
+chico config ollama --api-key YOUR_OLLAMA_KEY
 ```
 
-With a default model:
-```bash
-python chico-cli.py config openrouter --api-key YOUR_KEY --default-model "meta-llama/llama-3.3-70b-instruct"
-```
+Get your API keys:
+- **OpenRouter**: [openrouter.ai](https://openrouter.ai/)
+- **Ollama Cloud**: [ollama.com](https://ollama.com/)
 
-#### Configure Ollama Cloud
-
-```bash
-python chico-cli.py config ollama --api-key YOUR_OLLAMA_KEY
-```
-
-With a default model:
-```bash
-python chico-cli.py config ollama --api-key YOUR_KEY --default-model "gpt-oss:120b-cloud"
-```
-
-### View Configured Providers
+### 2. Start Chatting!
 
 ```bash
-python chico-cli.py providers
+# Simple chat
+chico chat "What is AI?"
+
+# Interactive mode with animation
+chico interactive --banner
+
+# Chat with code search
+chico chat "How to sort array in Python?" --search
+
+# Save conversation to history
+chico chat "Explain async/await" --save
 ```
 
-Output:
-```
-📋 Available Providers:
-------------------------------------------------------------
-  • OpenRouter (openrouter)
-    Status: ✓ Configured ✓ Active
-    Default model: meta-llama/llama-3.3-70b-instruct
+## 💬 Usage Examples
 
-  • Ollama Cloud (ollama)
-    Status: ✓ Configured 
-    Default model: gpt-oss:120b-cloud
-```
-
-### Switch Active Provider
+### Basic Chat
 
 ```bash
-python chico-cli.py switch ollama
-```
+# Quick question
+chico chat "What is the capital of France?"
 
-## 💬 Usage
+# Use specific model
+chico chat "Explain quantum computing" --model "anthropic/claude-3.5-sonnet"
 
-### List Available Models
-
-List models from active provider:
-```bash
-python chico-cli.py models
-```
-
-List models from specific provider:
-```bash
-python chico-cli.py models --provider openrouter
-python chico-cli.py models --provider ollama
-```
-
-### Send a Single Message
-
-Using active provider and default model:
-```bash
-python chico-cli.py chat "What is artificial intelligence?"
-```
-
-Using specific model:
-```bash
-python chico-cli.py chat "Explain quantum computing" --model "anthropic/claude-3.5-sonnet"
-```
-
-Using specific provider:
-```bash
-python chico-cli.py chat "Write a poem" --provider ollama --model "gpt-oss:120b-cloud"
-```
-
-Disable streaming:
-```bash
-python chico-cli.py chat "Tell me a joke" --no-stream
+# Use specific provider
+chico chat "Write a poem" --provider ollama --model "gpt-oss:120b-cloud"
 ```
 
 ### Interactive Chat Mode
 
-Start interactive chat with default settings:
 ```bash
-python chico-cli.py interactive
+# Start interactive session
+chico interactive
+
+# With specific model
+chico interactive --model "google/gemini-2.0-flash-exp"
+
+# With welcome animation
+chico interactive --banner
+
+# Without saving history
+chico interactive --no-save
 ```
 
-You'll see:
-```
-============================================================
-  🐕 Chico Chuwawa AI CLI - Built by Max van Heerden
-============================================================
+### Chat History
 
-🤖 Interactive Chat Mode
-Provider: OpenRouter
-Model: meta-llama/llama-3.3-70b-instruct
-Type 'exit' or 'quit' to end the session
-
-You: 
-```
-
-With specific model:
 ```bash
-python chico-cli.py interactive --model "google/gemini-2.0-flash-exp"
+# View recent sessions
+chico history
+
+# View last 20 sessions
+chico history --limit 20
 ```
 
-With specific provider:
+### Code Search
+
 ```bash
-python chico-cli.py interactive --provider ollama --model "deepseek-v3.1:671b-cloud"
+# General search
+chico search "python async programming"
+
+# Stack Overflow search
+chico search "javascript promises" --source stackoverflow
+
+# GitHub search
+chico search "rust async" --source github
 ```
+
+### Provider Management
+
+```bash
+# List all providers
+chico providers
+
+# Switch active provider
+chico switch ollama
+
+# List available models
+chico models
+
+# List models for specific provider
+chico models --provider openrouter
+```
+
+### WhatsApp Integration
+
+```bash
+# Setup WhatsApp connection
+chico whatsapp
+# Scan QR code with your phone
+```
+
+## 🎨 Visual Features
+
+### ASCII Chihuahua Animation
+
+When you run `chico interactive --banner`, you'll see:
+- Animated Chihuahua mascot
+- ASCII art logo
+- Beautiful colored output
+
+### Syntax Highlighting
+
+Code blocks in AI responses are automatically highlighted:
+```python
+def hello_world():
+    print("Hello from Chico!")
+```
+
+### Loading Messages
+
+While waiting for AI responses, you'll see fun messages like:
+- 🔨 Compiling your thoughts...
+- 🧠 Neural networks processing...
+- 💡 Generating brilliant code...
+
+## 🔧 Advanced Features
+
+### MCP Server Integrations
+
+Connect to various services for enhanced functionality:
+
+```python
+# Example: GitHub integration
+from chico.integrations.mcp_servers import GitHubMCP
+
+github = GitHubMCP({'api_token': 'YOUR_TOKEN', 'sandbox_mode': True})
+github.connect()
+github.execute('list_repos', {})
+```
+
+Supported services:
+- **GitHub** - Repository management, issue creation
+- **Railway** - Deployment automation
+- **Vercel** - Deployment and hosting
+- **Office 365** - Email and calendar
+- **Zoho CRM/Desk/Invoice** - Business operations
+
+### Desktop App Connections
+
+Connect to AI desktop applications:
+
+```python
+# Example: Claude desktop app
+from chico.integrations.desktop_apps import ClaudeApp
+
+claude = ClaudeApp({'api_url': 'http://localhost:5003'})
+if claude.connect():
+    response = claude.send_message("Hello!")
+```
+
+Supported apps:
+- Manus AI
+- DeepSeek
+- Claude AI
+- ChatGPT
+
+### Internet Search for Coding
+
+Automatically search for coding solutions:
+
+```bash
+# Chat with automatic search
+chico chat "How to implement binary search in Python?" --search
+```
+
+This will:
+1. Search Stack Overflow and other sources
+2. Include relevant results in the AI context
+3. Provide more accurate, up-to-date answers
 
 ## 📋 Command Reference
 
@@ -196,30 +267,88 @@ python chico-cli.py interactive --provider ollama --model "deepseek-v3.1:671b-cl
 
 | Command | Description |
 |---------|-------------|
-| `config openrouter --api-key KEY` | Configure OpenRouter |
-| `config ollama --api-key KEY` | Configure Ollama Cloud |
-| `config PROVIDER --api-key KEY --default-model MODEL` | Set default model |
-| `providers` | List all providers and their status |
-| `switch PROVIDER` | Switch active provider |
-
-### Model Commands
-
-| Command | Description |
-|---------|-------------|
-| `models` | List models from active provider |
-| `models --provider PROVIDER` | List models from specific provider |
+| `chico config openrouter --api-key KEY` | Configure OpenRouter |
+| `chico config ollama --api-key KEY` | Configure Ollama Cloud |
+| `chico config PROVIDER --api-key KEY --default-model MODEL` | Set default model |
+| `chico providers` | List all providers |
+| `chico switch PROVIDER` | Switch active provider |
 
 ### Chat Commands
 
 | Command | Description |
 |---------|-------------|
-| `chat "message"` | Send message with default settings |
-| `chat "message" --model MODEL` | Use specific model |
-| `chat "message" --provider PROVIDER` | Use specific provider |
-| `chat "message" --no-stream` | Disable streaming |
-| `interactive` | Start interactive chat |
-| `interactive --model MODEL` | Interactive with specific model |
-| `interactive --provider PROVIDER` | Interactive with specific provider |
+| `chico chat "message"` | Send message with default settings |
+| `chico chat "message" --model MODEL` | Use specific model |
+| `chico chat "message" --search` | Include web search |
+| `chico chat "message" --save` | Save to history |
+| `chico interactive` | Start interactive chat |
+| `chico interactive --banner` | Show welcome animation |
+| `chico interactive --no-save` | Don't save history |
+
+### History Commands
+
+| Command | Description |
+|---------|-------------|
+| `chico history` | View recent chat sessions |
+| `chico history --limit N` | Show last N sessions |
+
+### Search Commands
+
+| Command | Description |
+|---------|-------------|
+| `chico search "query"` | Search for coding solutions |
+| `chico search "query" --source stackoverflow` | Search Stack Overflow |
+| `chico search "query" --source github` | Search GitHub |
+
+### Integration Commands
+
+| Command | Description |
+|---------|-------------|
+| `chico whatsapp` | Setup WhatsApp integration |
+| `chico models` | List available AI models |
+
+## 🔑 Configuration
+
+### Configuration File Location
+
+- **Windows**: `%APPDATA%\ChicoChuwawa-CLI\config.json`
+- **Linux/Mac**: `~/.config/chico-cli/config.json`
+
+### Configuration Format
+
+```json
+{
+  "openrouter": {
+    "api_key": "sk-or-v1-xxxxx",
+    "default_model": "meta-llama/llama-3.3-70b-instruct"
+  },
+  "ollama": {
+    "api_key": "ollama_xxxxx",
+    "default_model": "gpt-oss:120b-cloud"
+  },
+  "active_provider": "openrouter",
+  "integrations": {
+    "github": {
+      "api_token": "ghp_xxxxx",
+      "sandbox_mode": true
+    }
+  }
+}
+```
+
+### Environment Variables
+
+You can also use environment variables:
+
+```bash
+# Linux/Mac
+export OPENROUTER_API_KEY=your_key
+export OLLAMA_API_KEY=your_key
+
+# Windows
+set OPENROUTER_API_KEY=your_key
+set OLLAMA_API_KEY=your_key
+```
 
 ## 🎯 Popular Models
 
@@ -240,11 +369,6 @@ python chico-cli.py interactive --provider ollama --model "deepseek-v3.1:671b-cl
 - `meta-llama/llama-3.1-8b-instruct` - Lightweight
 - `mistralai/mistral-7b-instruct` - Efficient and capable
 
-**Creative Writing:**
-- `anthropic/claude-3.5-sonnet` - Creative and nuanced
-- `google/gemini-pro` - Good for creative tasks
-- `meta-llama/llama-3.3-70b-instruct` - Strong creative abilities
-
 ### Ollama Cloud Models
 
 - `gpt-oss:120b-cloud` - Large, capable model
@@ -252,234 +376,107 @@ python chico-cli.py interactive --provider ollama --model "deepseek-v3.1:671b-cl
 - `qwen3-coder:480b-cloud` - Specialized for coding
 - `gpt-oss:20b-cloud` - Smaller, faster option
 
-## 📖 Examples
+## 🏗️ Project Structure
 
-### Example 1: Quick Question with OpenRouter
-
-```bash
-# Configure OpenRouter
-python chico-cli.py config openrouter --api-key sk-or-v1-xxxxx
-
-# Ask a question
-python chico-cli.py chat "What are the benefits of renewable energy?"
+```
+chico-chuwawa-cli/
+├── chico/                    # Main package
+│   ├── core/                # Core functionality
+│   ├── integrations/        # MCP servers & desktop apps
+│   │   ├── mcp_servers.py  # GitHub, Railway, Vercel, etc.
+│   │   ├── desktop_apps.py # Manus, DeepSeek, Claude, ChatGPT
+│   │   └── whatsapp.py     # WhatsApp integration
+│   ├── ui/                  # User interface components
+│   │   ├── animations.py   # ASCII art and animations
+│   │   ├── loading.py      # Loading spinners
+│   │   └── syntax.py       # Code highlighting
+│   └── utils/              # Utilities
+│       ├── history.py      # Chat history management
+│       └── search.py       # Internet search
+├── chico-cli.py            # Main CLI application
+├── requirements.txt        # Python dependencies
+├── setup.py               # pip installation
+├── install.sh             # Linux/Unix installer
+└── install.ps1            # Windows installer
 ```
 
-### Example 2: Code Generation with Specific Model
+## 🔐 Security
 
-```bash
-# Use Claude for coding
-python chico-cli.py chat "Write a Python function to calculate fibonacci numbers" \
-  --model "anthropic/claude-3.5-sonnet"
-```
-
-### Example 3: Switch to Ollama Cloud
-
-```bash
-# Configure Ollama
-python chico-cli.py config ollama --api-key ollama_xxxxx
-
-# Switch to Ollama
-python chico-cli.py switch ollama
-
-# Use Ollama model
-python chico-cli.py chat "Explain machine learning" \
-  --model "gpt-oss:120b-cloud"
-```
-
-### Example 4: Interactive Conversation
-
-```bash
-python chico-cli.py interactive --model "google/gemini-2.0-flash-exp"
-
-You: I'm learning Python. Can you help me?
-AI: Of course! I'd be happy to help you learn Python...
-
-You: How do I read a CSV file?
-AI: To read a CSV file in Python, you can use the csv module...
-
-You: exit
-Goodbye! 👋
-```
-
-### Example 5: Compare Models
-
-```bash
-# Try with Llama
-python chico-cli.py chat "Write a haiku about AI" \
-  --model "meta-llama/llama-3.3-70b-instruct"
-
-# Try with Claude
-python chico-cli.py chat "Write a haiku about AI" \
-  --model "anthropic/claude-3.5-sonnet"
-
-# Try with Gemini
-python chico-cli.py chat "Write a haiku about AI" \
-  --model "google/gemini-2.0-flash-exp"
-```
-
-## 🔧 Advanced Configuration
-
-### Environment Variables
-
-You can also use environment variables (they override config file):
-
-```bash
-# Windows
-set OPENROUTER_API_KEY=your_key
-set OLLAMA_API_KEY=your_key
-
-# Linux/Mac
-export OPENROUTER_API_KEY=your_key
-export OLLAMA_API_KEY=your_key
-```
-
-### Configuration File Location
-
-- **Windows**: `%APPDATA%\ChicoChuwawa-CLI\config.json`
-- **Linux/Mac**: `~/.config/chico-cli/config.json`
-
-### Configuration File Format
-
-```json
-{
-  "openrouter": {
-    "api_key": "sk-or-v1-xxxxx",
-    "default_model": "meta-llama/llama-3.3-70b-instruct"
-  },
-  "ollama": {
-    "api_key": "ollama_xxxxx",
-    "default_model": "gpt-oss:120b-cloud"
-  },
-  "active_provider": "openrouter"
-}
-```
-
-## 🏗️ Building Windows Executable
-
-### Build the Executable
-
-```bash
-python build_windows.py
-```
-
-This creates `dist/chico-cli.exe` - a standalone executable that includes:
-- All Python dependencies
-- The Chico Chuwawa logo
-- Configuration management
-
-### Using the Executable
-
-```bash
-# Configure
-chico-cli.exe config openrouter --api-key YOUR_KEY
-
-# Chat
-chico-cli.exe chat "Hello!"
-
-# Interactive
-chico-cli.exe interactive
-```
-
-### Add to PATH
-
-1. Copy `chico-cli.exe` to `C:\Tools\` (or your preferred location)
-2. Add `C:\Tools\` to your Windows PATH
-3. Open new Command Prompt and type: `chico-cli --help`
+- API keys stored in config directory (plain text)
+- Use file permissions to protect config files
+- Environment variables recommended for CI/CD
+- Sandbox mode available for MCP servers
+- Never commit config files to version control
 
 ## 🐛 Troubleshooting
 
 ### "No API key found"
-
-**Solution**: Configure the provider first:
+**Solution**: Configure the provider first
 ```bash
-python chico-cli.py config openrouter --api-key YOUR_KEY
+chico config openrouter --api-key YOUR_KEY
 ```
 
-### "Unknown provider"
-
-**Solution**: Use `openrouter` or `ollama`:
+### "chico command not found"
+**Solution**: Add to PATH or restart terminal
 ```bash
-python chico-cli.py providers  # List available providers
-```
-
-### "Provider not configured"
-
-**Solution**: Configure before switching:
-```bash
-python chico-cli.py config ollama --api-key YOUR_KEY
-python chico-cli.py switch ollama
+# Linux/Mac
+source ~/.bashrc
+# Or
+export PATH="$HOME/.local/bin:$PATH"
 ```
 
 ### Import Errors
-
-**Solution**: Install dependencies:
+**Solution**: Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### Model Not Found
-
-**Solution**: List available models:
+### Enhanced features not available
+**Solution**: Install optional dependencies
 ```bash
-python chico-cli.py models
+pip install pygments rich colorama duckduckgo-search qrcode
 ```
-
-Use the exact model ID from the list.
-
-### Rate Limits
-
-OpenRouter and Ollama have rate limits. If you hit them:
-- Wait a few seconds and try again
-- Use a different model
-- Check your account limits on the provider's website
-
-## 💰 Pricing
-
-### OpenRouter
-- Pay-per-use pricing
-- Varies by model
-- Check [openrouter.ai/models](https://openrouter.ai/models) for current prices
-- Free tier available for some models
-
-### Ollama Cloud
-- Currently in preview
-- Check [ollama.com/cloud](https://ollama.com/cloud) for pricing details
-
-## 🔐 Security
-
-- API keys are stored in plain text in config file
-- Ensure proper file permissions on your system
-- Don't commit config files to version control
-- Use environment variables for CI/CD pipelines
-- Rotate API keys regularly
 
 ## 📚 Resources
 
+- **GitHub**: [github.com/CA0071/chico-chuwawa-cli](https://github.com/CA0071/chico-chuwawa-cli)
 - **OpenRouter**: [openrouter.ai](https://openrouter.ai/)
 - **OpenRouter Docs**: [openrouter.ai/docs](https://openrouter.ai/docs)
-- **OpenRouter Models**: [openrouter.ai/models](https://openrouter.ai/models)
 - **Ollama Cloud**: [ollama.com/cloud](https://ollama.com/cloud)
-- **Ollama Docs**: [docs.ollama.com](https://docs.ollama.com/)
 
-## 🎉 What's New in v2.0
+## 🎉 What's New in v3.0
 
-- ✅ **OpenRouter Integration**: Access 500+ models
-- ✅ **Ollama Cloud Support**: Cloud-hosted models
-- ✅ **Multi-Provider System**: Switch between providers easily
-- ✅ **No GPT Lock-in**: Use any model you want
-- ✅ **Improved Configuration**: Per-provider settings
-- ✅ **Better Error Handling**: Clear error messages
-- ✅ **Model Discovery**: List available models per provider
+- ✅ **Modular Architecture** - Clean, maintainable code structure
+- ✅ **ASCII Animations** - Beautiful Chihuahua mascot and logo
+- ✅ **Syntax Highlighting** - Automatic code block highlighting
+- ✅ **Persistent History** - SQLite-based chat history
+- ✅ **Internet Search** - DuckDuckGo integration for coding help
+- ✅ **MCP Server Framework** - GitHub, Railway, Vercel, Office 365, Zoho
+- ✅ **Desktop App Connections** - Manus, DeepSeek, Claude, ChatGPT
+- ✅ **WhatsApp Integration** - QR code connection for mobile access
+- ✅ **Cross-Platform Installers** - Linux, Windows, macOS support
+- ✅ **Enhanced Error Handling** - Better error messages and recovery
+- ✅ **Loading Animations** - Fun coding-themed messages
+- ✅ **Global Command** - Use `chico` anywhere on your system
 
-## 🤝 About
+## 🤝 Contributing
 
-**Chico Chuwawa AI CLI** is designed to give you freedom of choice in AI models. No lock-in to specific providers or models - use what works best for your needs.
+Contributions welcome! Feel free to:
+- Report bugs
+- Suggest features
+- Submit pull requests
+- Improve documentation
+
+## 📄 License
+
+Free for personal and commercial use.
+
+## 🙏 Credits
 
 **Built by**: Max van Heerden  
-**Version**: 2.0.0  
-**License**: Free for personal and commercial use
+**Version**: 3.0.0  
+**Year**: 2026
 
 ---
 
-**Chico Chuwawa AI CLI** - Your gateway to hundreds of AI models! 🐕✨
-
+**Chico Chuwawa AI CLI** - Your comprehensive AI companion! 🐕✨
