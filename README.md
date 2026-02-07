@@ -429,44 +429,134 @@ python chico-cli.py config openrouter --api-key sk-or-v1-xxxxx
 python chico-cli.py chat "What are the benefits of renewable energy?"
 ```
 
-### Example 2: Code Generation with Specific Model
+### Example 2: Web-Enhanced Research
 
 ```bash
-# Use Claude for coding
-python chico-cli.py chat "Write a Python function to calculate fibonacci numbers" \
-  --model "anthropic/claude-3.5-sonnet"
+# Search the web and get AI-powered answer
+python chico-cli.py chat "What are the latest AI breakthroughs in 2024?" --web-search
+
+# The AI will:
+# 1. Search DuckDuckGo for relevant results
+# 2. Analyze the findings
+# 3. Provide a comprehensive answer with sources
 ```
 
-### Example 3: Switch to Ollama Cloud
+### Example 3: Repository Code Review Workflow
 
 ```bash
-# Configure Ollama
-python chico-cli.py config ollama --api-key ollama_xxxxx
+# Navigate to your project directory
+cd /path/to/your/project
 
-# Switch to Ollama
-python chico-cli.py switch ollama
+# Run the code review workflow
+python chico-cli.py workflow code-review "Please review this codebase for best practices"
 
-# Use Ollama model
-python chico-cli.py chat "Explain machine learning" \
-  --model "gpt-oss:120b-cloud"
+# Chico will:
+# 1. Analyze the repository structure
+# 2. Identify main code files
+# 3. Review code quality
+# 4. Provide improvement suggestions
+# You earn 50 XP and unlock achievements!
 ```
 
-### Example 4: Interactive Conversation
+### Example 4: Debug with Context
+
+```bash
+# Get help debugging with repository awareness
+python chico-cli.py chat "Why is my API returning 500 errors?" --repo-context
+
+# Or use the debug workflow
+python chico-cli.py workflow debug "API endpoint failing with 500 status code"
+```
+
+### Example 5: Interactive Chat with Gamification
 
 ```bash
 python chico-cli.py interactive --model "google/gemini-2.0-flash-exp"
 
-You: I'm learning Python. Can you help me?
-AI: Of course! I'd be happy to help you learn Python...
+# You'll see:
+    /\_/\  
+   ( ^.^ ) 
+    > * <  Let's go!
+   /|   |\
+  (_|   |_)
 
-You: How do I read a CSV file?
-AI: To read a CSV file in Python, you can use the csv module...
+🐕 Woof! Ready to fetch some answers!
+
+🤖 Interactive Chat Mode
+Provider: OpenRouter
+Model: google/gemini-2.0-flash-exp
+Level: 1 | XP: 0/100 | 🦴: 0
+Type 'stats' to see your progress!
+
+You: What is quantum computing?
+AI: [AI provides detailed explanation]
++10 XP! 💪 Tiny but mighty!
+
+You: stats
+🐕 Chico's Stats
+Level: 1 | XP: 10/100
+Chats: 1 | Achievements: 1
 
 You: exit
-Goodbye! 👋
+🐾 Goodbye! Chico will miss you!
 ```
 
-### Example 5: Compare Models
+### Example 6: Track Your Progress
+
+```bash
+# Check your stats anytime
+python chico-cli.py stats
+
+# Output shows:
+# - Current level
+# - XP progress
+# - Commands used
+# - Chats completed
+# - Workflows completed
+# - Bones collected 🦴
+# - Achievements unlocked 🏆
+```
+
+### Example 7: Search the Web Directly
+
+```bash
+# Quick web search
+python chico-cli.py search "Python best practices 2024" --max-results 5
+
+# Returns titles, URLs, and snippets from top results
+# Earn 5 XP for exploring!
+```
+
+### Example 8: Analyze Any Repository
+
+```bash
+# Analyze your current project
+python chico-cli.py analyze-repo
+
+# Or analyze another project
+python chico-cli.py analyze-repo --path /path/to/other/project
+
+# See:
+# - Git information
+# - File count
+# - Language breakdown
+# - Project structure
+```
+
+### Example 9: Research Workflow
+
+```bash
+# Deep research on a topic
+python chico-cli.py workflow research "Machine learning applications in healthcare"
+
+# Chico will:
+# 1. Search for information
+# 2. Analyze results
+# 3. Synthesize findings
+# 4. Provide a comprehensive summary
+```
+
+### Example 10: Compare Models
 
 ```bash
 # Try with Llama
