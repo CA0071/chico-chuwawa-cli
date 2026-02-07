@@ -100,7 +100,7 @@ class EnhancedAICLI(AICLI):
         console.print(table)
     
     def list_models_rich(self, provider: Optional[str] = None):
-        """List models with rich formatting"""
+        """List models with rich formatting (limited to 20 for display)"""
         self.initialize_client(provider)
         
         provider_info = self.PROVIDERS[self.current_provider]
@@ -125,7 +125,8 @@ class EnhancedAICLI(AICLI):
                         models = [m.get('name', 'unknown') for m in models_data]
                 else:
                     models_response = self.client.models.list()
-                    models = [model.id for model in models_response.data[:20]]  # Limit to 20
+                    # Limit to 20 for display readability - use --all flag for full list
+                    models = [model.id for model in models_response.data[:20]]
                 
                 progress.update(task, completed=True)
             except Exception:
@@ -136,6 +137,9 @@ class EnhancedAICLI(AICLI):
         
         for model in models:
             table.add_row(model)
+        
+        if len(models) >= 20:
+            console.print("\n[dim]Showing first 20 models. Use provider's website for full list.[/dim]")
         
         console.print(table)
     

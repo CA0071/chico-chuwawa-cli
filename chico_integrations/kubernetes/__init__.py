@@ -26,7 +26,7 @@ class KubernetesIntegration(BaseIntegration):
             else:
                 try:
                     config.load_kube_config()
-                except:
+                except Exception:
                     # If not in kubeconfig, try in-cluster config
                     config.load_incluster_config()
             

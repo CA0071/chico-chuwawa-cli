@@ -20,6 +20,7 @@ class IntegrationMonitor:
         self.hub = hub
         self.console = Console()
         self.monitoring = False
+        self.running = False
         self.metrics = {}
     
     def start_monitoring(self, interval: int = 5):
@@ -213,9 +214,10 @@ class ServiceMonitor:
 def start_background_monitor(hub, interval: int = 10):
     """Start background monitoring thread"""
     monitor = IntegrationMonitor(hub)
+    monitor.running = True
     
     def monitor_loop():
-        while True:
+        while monitor.running:
             monitor.collect_metrics()
             time.sleep(interval)
     

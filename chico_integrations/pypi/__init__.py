@@ -63,11 +63,16 @@ class PyPIIntegration(BaseIntegration):
                 data = response.json()
                 info = data.get('info', {})
                 
+                # Truncate description at word boundary
+                description = info.get('description', 'No description')
+                if len(description) > 500:
+                    description = description[:500].rsplit(' ', 1)[0] + '...'
+                
                 return {
                     'name': info.get('name'),
                     'version': info.get('version'),
                     'summary': info.get('summary', 'No summary'),
-                    'description': info.get('description', 'No description')[:500],  # Truncate
+                    'description': description,
                     'author': info.get('author', 'Unknown'),
                     'license': info.get('license', 'Unknown'),
                     'homepage': info.get('home_page', 'N/A'),

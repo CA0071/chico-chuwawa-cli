@@ -70,13 +70,28 @@ class AWSIntegration(BaseIntegration):
         
         try:
             import boto3
-            sts_client = boto3.client('sts')
+            
+            # Use same credentials for STS as configured for other services
+            aws_access_key = self.config.get('aws_access_key_id')
+            aws_secret_key = self.config.get('aws_secret_access_key')
+            region = self.config.get('region', 'us-east-1')
+            
+            if aws_access_key and aws_secret_key:
+                sts_client = boto3.client(
+                    'sts',
+                    aws_access_key_id=aws_access_key,
+                    aws_secret_access_key=aws_secret_key,
+                    region_name=region
+                )
+            else:
+                sts_client = boto3.client('sts', region_name=region)
+            
             identity = sts_client.get_caller_identity()
             
             return {
                 "account_id": identity.get('Account'),
                 "user_arn": identity.get('Arn'),
-                "region": self.config.get('region', 'us-east-1')
+                "region": region
             }
         except Exception as e:
             return {"error": str(e)}
