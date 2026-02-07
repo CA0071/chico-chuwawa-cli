@@ -21,6 +21,38 @@ except ImportError:
     os.system(f"{sys.executable} -m pip install openai")
     from openai import OpenAI
 
+# Import animations module
+try:
+    import animations
+except ImportError:
+    # If rich/animations not available, create dummy functions
+    class DummyAnimations:
+        @staticmethod
+        def show_banner(): pass
+        @staticmethod
+        def config_success_animation(): pass
+        @staticmethod
+        def model_listing_animation(): pass
+        @staticmethod
+        def success_animation(msg): print(f"✓ {msg}")
+        @staticmethod
+        def error_animation(msg): print(f"✗ {msg}")
+        @staticmethod
+        def provider_switch_animation(f, t): pass
+        @staticmethod
+        def interactive_start_animation(): pass
+        @staticmethod
+        def chat_thinking_spinner(msg): return msg
+        @staticmethod
+        def quick_loading(msg): print(msg)
+        @staticmethod
+        def quick_success(msg): print(f"✓ {msg}")
+        @staticmethod
+        def big_feat_celebration(feat): print(f"🎉 {feat}")
+        @staticmethod
+        def show_motivational_message(): pass
+    animations = DummyAnimations()
+
 
 class APIConfig:
     """Manage API configuration and credentials"""
@@ -52,7 +84,10 @@ class APIConfig:
         
         with open(self.config_file, 'w') as f:
             json.dump(config, f, indent=2)
-        print(f"✓ Configuration saved for {provider}")
+        
+        # Show success animation
+        animations.config_success_animation()
+        print(f"Configuration saved for {provider}")
     
     def load_config(self) -> dict:
         """Load API configuration"""
@@ -189,17 +224,25 @@ class AICLI:
             print(f"Configure it first: chico-cli.py config {provider} --api-key YOUR_KEY")
             sys.exit(1)
         
+        # Get current provider for animation
+        current = config.get('active_provider', 'none')
+        
         config['active_provider'] = provider
         with open(self.config.config_file, 'w') as f:
             json.dump(config, f, indent=2)
         
-        print(f"✓ Switched to {self.PROVIDERS[provider]['name']}")
+        # Show switch animation
+        animations.provider_switch_animation(current, provider)
+        animations.quick_success(f"Switched to {self.PROVIDERS[provider]['name']}")
     
     def list_models(self, provider: Optional[str] = None):
         """List available models"""
         self.initialize_client(provider)
         
         provider_info = self.PROVIDERS[self.current_provider]
+        
+        # Show model listing animation
+        animations.model_listing_animation()
         
         print(f"\n📋 Available Models for {provider_info['name']}:")
         print("-" * 60)
@@ -254,7 +297,9 @@ class AICLI:
             provider_config = self.config.get_provider_config(self.current_provider)
             model = provider_config.get('default_model', provider_info['default_model'])
         
-        print(f"\n💬 Sending message to {model} via {provider_info['name']}...\n")
+        print(f"\n💬 Sending message to {model} via {provider_info['name']}...")
+        animations.quick_loading(animations.chat_thinking_spinner())
+        print()
         
         try:
             if self.current_provider == 'ollama':
@@ -305,9 +350,12 @@ class AICLI:
                     )
                     print("Response:", response.choices[0].message.content)
                     print()
+                    
+                    # Show success after response
+                    animations.big_feat_celebration("Chat Response Delivered")
         
         except Exception as e:
-            print(f"Error: {e}")
+            animations.error_animation(f"Request failed: {e}")
             sys.exit(1)
     
     def chat_interactive(self, model: Optional[str] = None, provider: Optional[str] = None):
@@ -321,6 +369,10 @@ class AICLI:
             provider_config = self.config.get_provider_config(self.current_provider)
             model = provider_config.get('default_model', provider_info['default_model'])
         
+        # Show banner and interactive start animation
+        animations.show_banner()
+        animations.interactive_start_animation()
+        
         print("\n" + "="*60)
         print("  🐕 Chico Chuwawa AI CLI - Built by Max van Heerden")
         print("="*60)
@@ -328,6 +380,9 @@ class AICLI:
         print(f"Provider: {provider_info['name']}")
         print(f"Model: {model}")
         print("Type 'exit' or 'quit' to end the session\n")
+        
+        # Show motivational message
+        animations.show_motivational_message()
         
         messages = []
         use_streaming = True
@@ -337,6 +392,7 @@ class AICLI:
                 user_input = input("You: ").strip()
                 
                 if user_input.lower() in ['exit', 'quit']:
+                    animations.success_animation("Session ended - Great chatting!")
                     print("Goodbye! 👋")
                     break
                 
