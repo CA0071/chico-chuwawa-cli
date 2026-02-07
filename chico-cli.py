@@ -127,6 +127,7 @@ class AICLI:
         self.config = APIConfig()
         self.client = None
         self.current_provider = None
+        self.manus_config = None  # Store Manus-specific config
     
     def initialize_client(self, provider: Optional[str] = None):
         """Initialize API client with configuration"""
@@ -189,14 +190,14 @@ class AICLI:
                 self.current_provider = provider
                 return
         
-        # For Manus, use requests library
+        # For Manus, store configuration for making API requests
         if provider == 'manus':
-            import requests
-            self.client = requests.Session()
-            self.client.headers.update({
-                'Authorization': f'Bearer {api_key}',
-                'Content-Type': 'application/json'
-            })
+            # Store Manus-specific config instead of using client
+            self.manus_config = {
+                'api_key': api_key,
+                'base_url': provider_info['base_url']
+            }
+            self.client = None  # Manus doesn't use a persistent client
             self.current_provider = provider
             return
         
@@ -385,9 +386,14 @@ class AICLI:
                     "description": message,
                     "model": model
                 }
-                response = self.client.post(
-                    f"{provider_info['base_url']}/v1/tasks",
-                    json=task_data
+                headers = {
+                    'Authorization': f'Bearer {self.manus_config["api_key"]}',
+                    'Content-Type': 'application/json'
+                }
+                response = requests.post(
+                    f'{self.manus_config["base_url"]}/v1/tasks',
+                    json=task_data,
+                    headers=headers
                 )
                 
                 if response.status_code == 200 or response.status_code == 201:
@@ -529,9 +535,14 @@ class AICLI:
                             "description": user_input,
                             "model": model
                         }
-                        response = self.client.post(
-                            f"{provider_info['base_url']}/v1/tasks",
-                            json=task_data
+                        headers = {
+                            'Authorization': f'Bearer {self.manus_config["api_key"]}',
+                            'Content-Type': 'application/json'
+                        }
+                        response = requests.post(
+                            f'{self.manus_config["base_url"]}/v1/tasks',
+                            json=task_data,
+                            headers=headers
                         )
                         
                         if response.status_code == 200 or response.status_code == 201:
@@ -586,7 +597,8 @@ class AICLI:
                             )
                             assistant_message = response.content[0].text
                         elif self.current_provider == 'manus':
-                            # Already non-streaming
+                            # Manus doesn't support streaming, re-raise the original error
+                            print("\nManus AI doesn't support streaming mode.")
                             raise
                         else:
                             response = self.client.chat.completions.create(
