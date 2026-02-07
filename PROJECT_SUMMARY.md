@@ -1,138 +1,256 @@
-# Windows CLI API Integration - Project Summary
+# Chico Chuwawa AI CLI - Project Summary v3.0
 
 ## Overview
 
-This project provides a complete command-line interface (CLI) tool for Windows that integrates with OpenAI-compatible APIs. The tool is designed for easy installation, secure API key management, and flexible usage patterns.
+Chico Chuwawa AI CLI v3.0 is an advanced, feature-rich command-line interface that combines the best capabilities of leading AI CLIs (Qwen, Claude, Gemini) with unique gamification and a fun Chihuahua theme. It provides access to hundreds of AI models through multiple providers, advanced agentic workflows, deep repository understanding, web search integration, and an engaging gamification system.
 
 ## Project Structure
 
 ```
-windows-cli-api/
-├── cli.py                    # Main CLI application (Python)
+chico-chuwawa-cli/
+├── chico-cli.py              # Main CLI application (Python)
+├── requirements.txt          # Python dependencies
+├── config.example.json       # Example configuration file
+├── README.md                 # Complete documentation
+├── FEATURES.md               # Feature comparison guide
+├── CHANGELOG.md              # Version history
+├── PROJECT_SUMMARY.md        # This file
+├── INSTALL_WINDOWS.md        # Windows installation guide
+├── QUICKSTART.md             # Quick start guide
 ├── build_windows.py          # Script to build Windows executable
-├── ai-cli.bat               # Windows batch file wrapper
-├── requirements.txt         # Python dependencies
-├── config.example.json      # Example configuration file
-├── README.md                # Complete documentation
-├── INSTALL_WINDOWS.md       # Windows installation guide
-├── QUICKSTART.md            # Quick start guide
-└── PROJECT_SUMMARY.md       # This file
+├── chico-cli.bat            # Windows batch file wrapper
+├── install.ps1              # PowerShell installer
+└── chico-logo.png           # Chico mascot logo
 ```
 
 ## Key Features
 
-### 1. **Secure API Key Management**
-- Configuration stored in Windows AppData directory
-- Support for environment variables
-- Automatic fallback to config file
-- No hardcoded credentials
+### 1. **Multi-Provider AI Access**
+- OpenRouter integration (500+ models)
+- Ollama Cloud support
+- Easy provider switching
+- Per-provider configuration
+- No vendor lock-in
 
-### 2. **Multiple Usage Modes**
-- **Single Message Mode**: Quick queries with immediate responses
-- **Interactive Chat Mode**: Multi-turn conversations with context
-- **Model Selection**: Choose from multiple AI models
-- **Streaming Support**: Real-time response streaming with automatic fallback
+### 2. **Agentic Workflows (Qwen-style)**
+- Multi-step task automation
+- Code Review workflow
+- Debug Assistant workflow
+- Research Assistant workflow
+- Real-time progress tracking
+- XP rewards for completion
 
-### 3. **Cross-Platform Compatibility**
-- Primary target: Windows
-- Also works on Linux and macOS
-- Python-based for maximum portability
-- Can be packaged as standalone executable
+### 3. **Repository Understanding (Claude-style)**
+- Automatic repository analysis
+- Git integration (branch, commits)
+- File type recognition
+- Context-aware AI responses
+- Project structure mapping
 
-### 4. **User-Friendly Design**
-- Simple command structure
-- Helpful error messages
-- Automatic dependency installation
-- Comprehensive help documentation
+### 4. **Web Search & Research (Gemini-style)**
+- DuckDuckGo web search integration
+- Enhanced AI responses with real-time data
+- Direct web search command
+- Citation support
+- Research workflows
+
+### 5. **Gamification System**
+- XP and leveling system
+- Achievement unlocking
+- Bone collection (🦴)
+- Persistent progress tracking
+- Visual stat displays
+
+### 6. **Beautiful Terminal UI**
+- Rich library integration
+- Colorful tables and panels
+- ASCII art animations
+- Markdown rendering
+- Progress indicators
+
+### 7. **Chihuahua Theme**
+- Adorable ASCII art (3 variations)
+- Fun quotes and encouragement
+- Themed interactions
+- Personality-driven UX
 
 ## Technical Implementation
 
 ### Core Technologies
-- **Language**: Python 3.7+
-- **API Client**: OpenAI Python SDK
+- **Language**: Python 3.12+
+- **API Clients**: OpenAI SDK, Ollama SDK
+- **UI Framework**: Rich (terminal UI)
+- **Web Search**: DuckDuckGo Search
+- **Git Integration**: GitPython
 - **Packaging**: PyInstaller (for executable)
-- **Configuration**: JSON-based config file
+- **Configuration**: JSON-based config files
+
+### Dependencies
+```python
+openai>=1.0.0           # OpenAI-compatible API client
+ollama>=0.1.0           # Ollama Cloud client
+requests>=2.31.0        # HTTP library
+rich>=13.0.0            # Beautiful terminal UI
+beautifulsoup4>=4.12.0  # Web scraping
+duckduckgo-search>=4.0.0 # Web search
+gitpython>=3.1.0        # Git repository analysis
+pillow>=10.0.0          # Image processing (future)
+pyfiglet>=0.8.0         # ASCII art generation
+```
 
 ### Architecture
 
 ```
-┌─────────────────────────────────────────┐
-│           User Interface                │
-│  (Command Line / Terminal)              │
-└──────────────┬──────────────────────────┘
+┌─────────────────────────────────────────────────┐
+│           User Interface                        │
+│  (Command Line / Terminal with Rich UI)        │
+└──────────────┬──────────────────────────────────┘
                │
                ▼
-┌─────────────────────────────────────────┐
-│         CLI Application (cli.py)        │
-│  ┌───────────────────────────────────┐  │
-│  │  Command Parser (argparse)        │  │
-│  └───────────┬───────────────────────┘  │
-│              │                           │
-│  ┌───────────▼───────────────────────┐  │
-│  │  AICLI Class                      │  │
-│  │  - chat()                         │  │
-│  │  - chat_interactive()             │  │
-│  │  - list_models()                  │  │
-│  │  - configure()                    │  │
-│  └───────────┬───────────────────────┘  │
-│              │                           │
-│  ┌───────────▼───────────────────────┐  │
-│  │  APIConfig Class                  │  │
-│  │  - save_config()                  │  │
-│  │  - load_config()                  │  │
-│  │  - get_api_key()                  │  │
-│  └───────────┬───────────────────────┘  │
-└──────────────┼───────────────────────────┘
+┌─────────────────────────────────────────────────┐
+│     CLI Application (chico-cli.py)              │
+│  ┌──────────────────────────────────────────┐   │
+│  │  Command Parser (argparse)               │   │
+│  └──────────┬───────────────────────────────┘   │
+│             │                                    │
+│  ┌──────────▼───────────────────────────────┐   │
+│  │  AICLI Class (Main Orchestrator)         │   │
+│  │  - chat() [enhanced with flags]          │   │
+│  │  - chat_interactive() [with stats]       │   │
+│  │  - list_models(), configure()            │   │
+│  │  - show_welcome()                        │   │
+│  └──────────┬───────────────────────────────┘   │
+│             │                                    │
+│  ┌──────────▼───────────────────────────────┐   │
+│  │  Support Systems                         │   │
+│  │  ┌─────────────────────────────────────┐ │   │
+│  │  │ GamificationSystem                  │ │   │
+│  │  │ - XP, levels, achievements          │ │   │
+│  │  └─────────────────────────────────────┘ │   │
+│  │  ┌─────────────────────────────────────┐ │   │
+│  │  │ WorkflowEngine                      │ │   │
+│  │  │ - Multi-step automation             │ │   │
+│  │  └─────────────────────────────────────┘ │   │
+│  │  ┌─────────────────────────────────────┐ │   │
+│  │  │ RepoAnalyzer                        │ │   │
+│  │  │ - Git integration, file analysis    │ │   │
+│  │  └─────────────────────────────────────┘ │   │
+│  │  ┌─────────────────────────────────────┐ │   │
+│  │  │ WebSearcher                         │ │   │
+│  │  │ - DuckDuckGo integration            │ │   │
+│  │  └─────────────────────────────────────┘ │   │
+│  └────────────────────────────────────────────┘ │
+│                                                  │
+│  ┌──────────────────────────────────────────┐   │
+│  │  APIConfig Class                         │   │
+│  │  - save_config(), load_config()          │   │
+│  │  - gamification instance                 │   │
+│  └──────────────────────────────────────────┘   │
+└──────────────┬───────────────────────────────────┘
                │
                ▼
-┌─────────────────────────────────────────┐
-│      OpenAI Python SDK                  │
-└──────────────┬──────────────────────────┘
+┌─────────────────────────────────────────────────┐
+│      API Clients                                │
+│  - OpenAI SDK (OpenRouter, custom)              │
+│  - Ollama SDK (Ollama Cloud)                    │
+└──────────────┬──────────────────────────────────┘
                │
                ▼
-┌─────────────────────────────────────────┐
-│   OpenAI-Compatible API Endpoint        │
-│   (OpenAI, Azure, Custom, etc.)         │
-└─────────────────────────────────────────┘
+┌─────────────────────────────────────────────────┐
+│   External Services                             │
+│  - OpenRouter API (500+ models)                 │
+│  - Ollama Cloud API                             │
+│  - DuckDuckGo Search                            │
+└─────────────────────────────────────────────────┘
 ```
 
 ### Key Components
 
 #### 1. **APIConfig Class**
 Manages configuration and credentials:
-- Determines config file location based on OS
-- Saves and loads API credentials
-- Handles environment variable fallback
-- Provides secure credential storage
+- OS-specific config directory (AppData/Windows, .config/Linux)
+- Multi-provider API key storage
+- Environment variable fallback
+- Initializes GamificationSystem
+- JSON-based persistence
 
 #### 2. **AICLI Class**
-Main application logic:
-- Initializes OpenAI client
-- Implements chat functionality
-- Handles interactive sessions
-- Lists available models
-- Manages error handling
+Main application orchestrator:
+- Multi-provider client initialization
+- Chat with optional web search and repo context
+- Interactive mode with stats display
+- Model listing and provider switching
+- Welcome screen with Chico ASCII art
+- Integration with all support systems
 
-#### 3. **Command Parser**
-Uses argparse for command-line interface:
-- `config`: Configure API credentials
-- `models`: List available models
-- `chat`: Send single messages
-- `interactive`: Start chat sessions
+#### 3. **GamificationSystem Class**
+Progress tracking and motivation:
+- XP and level management
+- Achievement unlocking
+- Bone collection on level up
+- Persistent progress storage
+- Beautiful stat displays
+
+#### 4. **WorkflowEngine Class**
+Multi-step automation:
+- Workflow templates (code-review, debug, research)
+- Step-by-step execution with progress
+- Context passing between steps
+- XP rewards and achievement tracking
+
+#### 5. **RepoAnalyzer Class**
+Repository intelligence:
+- Git repository detection
+- Branch and remote information
+- File type analysis
+- Language distribution
+- Context generation for AI
+
+#### 6. **WebSearcher Class**
+Real-time information:
+- DuckDuckGo search integration
+- Result parsing and formatting
+- Citation support
+- Graceful fallback if unavailable
+
+#### 7. **Command Parser**
+Comprehensive CLI with subcommands:
+- `config`, `providers`, `switch` - Setup
+- `models` - Discovery
+- `chat` - Basic and enhanced chat
+- `interactive` - Conversational mode
+- `workflow` - Multi-step automation
+- `stats` - Progress tracking
+- `analyze-repo` - Repository analysis
+- `search` - Web search
 
 ### Error Handling
 
-The application includes robust error handling:
-- **Streaming fallback**: Automatically switches to non-streaming if not supported
-- **Model listing fallback**: Shows common models if API doesn't support listing
-- **API key validation**: Clear error messages for missing credentials
-- **Network errors**: Graceful handling of connection issues
+Robust error handling throughout:
+- **Streaming fallback**: Auto-detect and fallback to non-streaming
+- **Optional dependency handling**: Graceful degradation
+- **API errors**: Clear, actionable error messages
+- **Network issues**: Retry logic and fallbacks
+- **Git errors**: Continue without Git if unavailable
 
-## Supported Models
+## Supported Models & Providers
 
-The tool supports any OpenAI-compatible API, including:
-- **gpt-4.1-mini**: Fast and efficient (default)
-- **gpt-4.1-nano**: Lightweight for quick responses
+### OpenRouter (500+ models)
+- **Anthropic**: Claude 3.5 Sonnet, Claude 3 Opus
+- **Google**: Gemini 2.0 Flash, Gemini Pro
+- **Meta**: Llama 3.3 70B, Llama 3.1 405B
+- **Mistral**: Mistral Large, Mixtral
+- **DeepSeek**: DeepSeek V3
+- **Qwen**: Qwen 2.5 72B, Qwen 3 Coder
+- And hundreds more!
+
+### Ollama Cloud
+- `gpt-oss:120b-cloud` - Large general model
+- `deepseek-v3.1:671b-cloud` - Massive reasoning model
+- `qwen3-coder:480b-cloud` - Code specialist
+- `gpt-oss:20b-cloud` - Fast, efficient
+- `kimi-k2:1t-cloud` - Context champion
+- `glm-4.6:cloud` - Chinese language expert
 - **gemini-2.5-flash**: Google's Gemini model
 - Any custom models from compatible APIs
 
@@ -162,25 +280,54 @@ python cli.py config --api-key YOUR_KEY --base-url https://custom.api.com/v1
 
 ### Basic Chat
 ```bash
-python cli.py chat "What is Python?"
+python chico-cli.py chat "What is Python?"
+```
+
+### Enhanced Chat with Web Search
+```bash
+python chico-cli.py chat "Latest AI news" --web-search
+```
+
+### Chat with Repository Context
+```bash
+python chico-cli.py chat "Review this code" --repo-context
+```
+
+### Multi-Step Workflows
+```bash
+# Code review
+python chico-cli.py workflow code-review "Analyze this project"
+
+# Debug assistance
+python chico-cli.py workflow debug "API returning 500 errors"
+
+# Research
+python chico-cli.py workflow research "Quantum computing applications"
 ```
 
 ### Interactive Mode
 ```bash
-python cli.py interactive
+python chico-cli.py interactive
 > You: Hello!
-> AI: Hi! How can I help you today?
+> AI: Hi! How can I help?
+> You: stats
+> [Shows level, XP, achievements]
 > You: exit
 ```
 
-### Specific Model
+### Repository Analysis
 ```bash
-python cli.py chat "Explain AI" --model gpt-4.1-nano
+python chico-cli.py analyze-repo
 ```
 
-### Non-Streaming
+### Web Search
 ```bash
-python cli.py chat "Tell me a joke" --no-stream
+python chico-cli.py search "Python best practices 2024"
+```
+
+### Track Progress
+```bash
+python chico-cli.py stats
 ```
 
 ## Building Executable
@@ -203,68 +350,68 @@ The executable:
 
 ## Installation Methods
 
-### Method 1: Python Script (Recommended for Development)
-1. Install Python 3.7+
+### Method 1: Python Script (Recommended)
+1. Install Python 3.12+ (3.7+ minimum)
 2. Install dependencies: `pip install -r requirements.txt`
-3. Run: `python cli.py`
+3. Run: `python chico-cli.py`
 
-### Method 2: Batch File (Easier Typing)
+### Method 2: Batch File (Windows Convenience)
 1. Same as Method 1
-2. Use: `ai-cli.bat` instead of `python cli.py`
+2. Use: `chico-cli.bat` instead of `python chico-cli.py`
 
-### Method 3: Standalone Executable (Best for Distribution)
+### Method 3: Standalone Executable (Future)
 1. Build: `python build_windows.py`
-2. Distribute: `dist/ai-cli.exe`
+2. Distribute: `dist/chico-cli.exe`
 3. No Python required on target machine
 
 ## Security Considerations
 
 ### API Key Storage
-- Stored in plain text in config file
+- Stored in JSON config files (plain text)
+- Windows: `%APPDATA%\ChicoChuwawa-CLI\config.json`
+- Linux/Mac: `~/.config/chico-cli/config.json`
 - File permissions should be restricted
-- Environment variables are more secure for temporary use
+- Environment variables supported as fallback
 
 ### Best Practices
-1. Never commit config files with API keys
-2. Use environment variables in CI/CD
+1. Never commit config files with API keys to Git
+2. Use environment variables in CI/CD pipelines
 3. Rotate API keys regularly
 4. Set appropriate file permissions on config directory
+5. Different keys for development and production
 
 ## Testing
 
-The tool has been tested with:
-- ✅ Single message mode
-- ✅ Interactive chat mode
-- ✅ Model listing (with fallback)
-- ✅ Streaming responses (with fallback)
-- ✅ Non-streaming responses
-- ✅ Multiple models (gpt-4.1-mini, gpt-4.1-nano)
+Tested features in v3.0:
+- ✅ Multi-provider support (OpenRouter, Ollama)
+- ✅ Streaming responses with fallback
+- ✅ Interactive chat mode with stats
 - ✅ Configuration management
-- ✅ Error handling
+- ✅ Gamification system
+- ✅ Repository analysis
+- ✅ Web search integration
+- ✅ Workflow engine
+- ✅ Achievement system
+- ✅ Beautiful UI rendering
+- ✅ Cross-platform compatibility
 
 ## Future Enhancements
 
-Potential improvements:
-1. **Conversation History**
-   - Save and load previous conversations
-   - Search through chat history
+### Planned for v3.1
+- 🖼️ Image analysis with multimodal models
+- 📄 Document parsing (PDF, DOCX, etc.)
+- 💬 WhatsApp integration
+- 🔔 Desktop notifications
+- 🎨 Custom themes
+- 🏆 More achievements
 
-2. **Advanced Features**
-   - Custom system prompts
-   - Token usage tracking
-   - Response formatting options
-   - Temperature and parameter controls
-
-3. **User Experience**
-   - Colored output
-   - Progress indicators
-   - Auto-completion
-   - Command history
-
-4. **Integration**
-   - Plugin system
-   - API for other applications
-   - Web interface option
+### Planned for v3.2+
+- 🔌 Plugin system for community extensions
+- 📚 More workflow templates
+- 🗣️ Voice interface
+- ☁️ Cloud sync for progress
+- 👥 Team collaboration features
+- 📊 Analytics and insights
 
 ## Troubleshooting Guide
 
@@ -272,53 +419,96 @@ Potential improvements:
 
 | Issue | Solution |
 |-------|----------|
-| "python is not recognized" | Add Python to PATH or reinstall with PATH option |
-| "No API key found" | Run `python cli.py config --api-key YOUR_KEY` |
-| "Streaming is not supported" | Tool auto-handles this, or use `--no-stream` |
-| "Error listing models" | Tool shows common models as fallback |
-| Windows Defender warning | Normal for new executables, click "Run anyway" |
+| "No module named 'openai'" | Run `pip install -r requirements.txt` |
+| "No API key found" | Run `python chico-cli.py config openrouter --api-key YOUR_KEY` |
+| "Streaming is not supported" | Tool auto-handles this with fallback |
+| "Web search unavailable" | Install: `pip install duckduckgo-search` |
+| "Git not available" | Repository analysis will work without Git features |
+| Slow web search | Normal, DuckDuckGo can be rate-limited |
+| Missing achievements | They unlock as you use features |
 
 ## Documentation Files
 
-1. **README.md**: Complete documentation with all features
-2. **INSTALL_WINDOWS.md**: Detailed Windows installation guide
-3. **QUICKSTART.md**: 5-minute quick start guide
+1. **README.md**: Complete user documentation
+2. **FEATURES.md**: Feature comparison with other CLIs
+3. **CHANGELOG.md**: Version history and changes
 4. **PROJECT_SUMMARY.md**: This technical overview
+5. **INSTALL_WINDOWS.md**: Windows installation guide
+6. **QUICKSTART.md**: Quick start guide
 
-## Dependencies
+## System Requirements
 
-### Runtime Dependencies
-- `openai >= 1.0.0`: OpenAI Python SDK
+### Minimum
+- Python 3.7+
+- 100 MB disk space
+- Internet connection
+- Terminal with UTF-8 support
 
-### Build Dependencies
-- `pyinstaller`: For creating Windows executable
+### Recommended
+- Python 3.12+
+- 500 MB disk space (with all features)
+- Good terminal emulator (Windows Terminal, iTerm2, etc.)
+- Git installed (for repo analysis)
 
-### System Requirements
-- Python 3.7 or higher
-- Windows 7 or higher (primary target)
-- Internet connection for API calls
+### Platform Support
+- ✅ Windows 7+ (tested on Windows 10/11)
+- ✅ macOS 10.13+ (tested on macOS 14)
+- ✅ Linux (tested on Ubuntu 22.04)
 
 ## License and Usage
 
-This project is provided as-is for:
+Chico CLI is free and open source for:
 - Educational purposes
 - Commercial use
 - Personal projects
 - Integration into other tools
+- Modification and distribution
 
 ## Conclusion
 
-This Windows CLI API Integration tool provides a complete, production-ready solution for interacting with OpenAI-compatible APIs from the command line. It balances ease of use with powerful features, making it suitable for both casual users and developers.
+**Chico Chuwawa AI CLI v3.0** is not just another CLI tool—it's a comprehensive platform that:
 
-The tool is designed to be:
-- **Easy to install**: Simple setup process
-- **Easy to use**: Intuitive command structure
-- **Easy to distribute**: Standalone executable option
-- **Easy to extend**: Clean, modular code structure
+### Combines the Best
+- **Qwen's** agentic workflows for multi-step automation
+- **Claude's** deep repository understanding
+- **Gemini's** web search and broad capabilities
+- Plus unique gamification that makes it fun!
 
-Whether you're using it for quick AI queries, interactive conversations, or integrating it into automated workflows, this CLI tool provides a solid foundation for Windows-based API interaction.
+### Delivers Value
+- **500+ AI models** from multiple providers
+- **No lock-in** - freedom to choose
+- **Open source** - transparent and customizable
+- **Free** - no hidden costs or paywalls
+- **Fun** - gamification keeps you engaged
+- **Professional** - production-ready features
+
+### Built for Everyone
+- **Developers**: Code review, debugging, repo analysis
+- **Students**: Learning with gamified rewards
+- **Researchers**: Web search + AI reasoning
+- **Teams**: Open, extensible, no licensing fees
+
+### Designed to be
+- **Powerful**: Advanced workflows and features
+- **Easy**: Simple commands, beautiful UI
+- **Fun**: Chico the Chihuahua, XP, achievements
+- **Flexible**: Multi-provider, many models
+- **Reliable**: Robust error handling, fallbacks
+- **Extensible**: Modular architecture for plugins
+
+Whether you're chatting with AI, automating workflows, researching topics, or leveling up your Chico companion, this CLI provides an engaging and productive experience.
 
 ---
+
+**Version**: 3.0.0 - Enhanced Edition  
+**Created**: 2026  
+**Platform**: Cross-platform (Windows, macOS, Linux)  
+**Status**: Production Ready ✅  
+**Motto**: "Small dog, BIG intelligence!" 🐕✨
+
+---
+
+**Chico Chuwawa AI CLI** - Where AI meets fun! 🎮🤖
 
 **Version**: 1.0.0  
 **Created**: October 2025  
