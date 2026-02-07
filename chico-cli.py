@@ -55,6 +55,11 @@ except ImportError:
     GIT_AVAILABLE = False
 
 
+# Constants
+MAX_RESULT_PREVIEW_LENGTH = 500  # Characters to show in workflow step results
+CHICO_QUOTE_PROBABILITY = 0.1  # 10% chance to show random quote
+
+
 # Chihuahua ASCII Art and Animations
 CHICO_ASCII_ART = [
     r"""
@@ -357,7 +362,16 @@ class WorkflowEngine:
                 print(f"Step {i}/{len(workflow['steps'])}: {step}")
             
             # Build step-specific prompt
-            step_prompt = f"{context}\n\nTask: {step}\nPrevious context: {' '.join(results[-2:]) if results else 'None'}"
+            # Preserve context structure between steps
+            previous_context = ""
+            if results:
+                # Use last 2 results with clear separation
+                recent_results = results[-2:]
+                previous_context = "\n\n---Previous Step Results---\n"
+                for idx, result in enumerate(recent_results, start=len(results)-len(recent_results)+1):
+                    previous_context += f"\n[Step {idx} Output]:\n{result}\n"
+            
+            step_prompt = f"{context}\n\nCurrent Task: {step}{previous_context}"
             
             # Execute step
             try:
@@ -382,7 +396,9 @@ class WorkflowEngine:
                 results.append(result)
                 
                 if RICH_AVAILABLE:
-                    console.print(Panel(result[:500] + ("..." if len(result) > 500 else ""), 
+                    # Show truncated preview
+                    preview = result[:MAX_RESULT_PREVIEW_LENGTH] + ("..." if len(result) > MAX_RESULT_PREVIEW_LENGTH else "")
+                    console.print(Panel(preview, 
                                       title=f"Step {i} Result", border_style="green"))
                 else:
                     print(f"Result: {result[:300]}...")
@@ -877,7 +893,7 @@ class AICLI:
                     self.gamification.add_xp(10, "interactive chat")
                     
                     # Show random Chico encouragement occasionally
-                    if random.random() < 0.1:  # 10% chance
+                    if random.random() < CHICO_QUOTE_PROBABILITY:
                         if RICH_AVAILABLE:
                             self.console.print(f"[dim italic]{random.choice(CHICO_QUOTES)}[/dim italic]")
                         else:
