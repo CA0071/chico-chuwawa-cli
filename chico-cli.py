@@ -548,8 +548,18 @@ Examples:
             from whatsapp_manager import WhatsAppManager
         except ImportError:
             print("Error: Required packages not installed. Installing...")
-            os.system(f"{sys.executable} -m pip install selenium webdriver-manager")
-            from whatsapp_manager import WhatsAppManager
+            import subprocess
+            try:
+                subprocess.run(
+                    [sys.executable, "-m", "pip", "install", "selenium", "webdriver-manager"],
+                    check=True,
+                    capture_output=True
+                )
+                from whatsapp_manager import WhatsAppManager
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to install required packages: {e}")
+                print("Please install manually: pip install selenium webdriver-manager")
+                sys.exit(1)
         
         if not args.whatsapp_command:
             whatsapp_parser.print_help()

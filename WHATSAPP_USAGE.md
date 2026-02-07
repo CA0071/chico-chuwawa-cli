@@ -330,4 +330,4 @@ chmod +x daily_reminder.sh
 ---
 
 **Built by Max van Heerden**  
-**Part of Chico Chuwawa AI CLI v2.0.0**
+**Part of Chico Chuwawa AI CLI v2.1.0**

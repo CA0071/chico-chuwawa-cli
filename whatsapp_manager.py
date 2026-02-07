@@ -250,25 +250,29 @@ class WhatsAppManager:
         print("\n👀 Monitoring WhatsApp messages...")
         print("   Press Ctrl+C to stop monitoring\n")
         
-        last_unread_count = 0
+        seen_chats = set()  # Track chats we've already seen
         
         try:
             while True:
                 unread_chats = self.get_unread_chats()
-                current_count = len(unread_chats)
                 
-                if current_count > last_unread_count:
-                    # New messages detected
-                    new_chats = unread_chats[last_unread_count:]
-                    
-                    for chat in new_chats:
+                # Check for new messages by tracking unique chat names
+                for chat in unread_chats:
+                    chat_id = chat['name']
+                    if chat_id not in seen_chats:
+                        # New unread chat detected
                         print(f"\n📩 New message from: {chat['name']}")
                         print(f"   Message: {chat['last_message']}")
+                        
+                        seen_chats.add(chat_id)
                         
                         if callback:
                             callback(chat['name'], chat['last_message'])
                 
-                last_unread_count = current_count
+                # Remove chats that are no longer unread
+                current_chat_names = {chat['name'] for chat in unread_chats}
+                seen_chats = seen_chats.intersection(current_chat_names)
+                
                 time.sleep(interval)
                 
         except KeyboardInterrupt:
@@ -295,18 +299,16 @@ class WhatsAppManager:
             search_box.clear()
             search_box.click()
             search_box.send_keys(chat_name)
-            time.sleep(2)  # Wait for search results
             
-            # Click on the first result
+            # Wait for search results to appear using WebDriverWait
             chat_result = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.XPATH, f'//span[@title="{chat_name}"]'))
+                EC.element_to_be_clickable((By.XPATH, f'//span[@title="{chat_name}"]'))
             )
             chat_result.click()
-            time.sleep(1)
             
-            # Find message input and send message
+            # Wait for chat to load and message input to be available
             message_box = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, self.SELECTORS['message_input']))
+                EC.element_to_be_clickable((By.CSS_SELECTOR, self.SELECTORS['message_input']))
             )
             
             # Split message by lines and send each line
