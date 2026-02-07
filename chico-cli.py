@@ -91,6 +91,35 @@ class AICLI:
             'default_model': 'gpt-oss:120b-cloud',
             'supports_streaming': True,
             'models_endpoint': True
+        },
+        'deepseek': {
+            'name': 'DeepSeek',
+            'base_url': 'https://api.deepseek.com',
+            'default_model': 'deepseek-chat',
+            'supports_streaming': True,
+            'models_endpoint': True
+        },
+        'chatgpt': {
+            'name': 'ChatGPT (OpenAI)',
+            'base_url': 'https://api.openai.com/v1',
+            'default_model': 'gpt-4o',
+            'supports_streaming': True,
+            'models_endpoint': True
+        },
+        'claude': {
+            'name': 'Claude (Anthropic)',
+            'base_url': 'https://api.anthropic.com',
+            'default_model': 'claude-opus-4-20250514',
+            'supports_streaming': True,
+            'models_endpoint': False,
+            'api_version': '2023-06-01'
+        },
+        'manus': {
+            'name': 'Manus AI',
+            'base_url': 'https://open.manus.ai',
+            'default_model': 'manus-1',
+            'supports_streaming': False,
+            'models_endpoint': False
         }
     }
     
@@ -100,7 +129,7 @@ class AICLI:
         self.current_provider = None
     
     def initialize_client(self, provider: Optional[str] = None):
-        """Initialize OpenAI-compatible client with configuration"""
+        """Initialize API client with configuration"""
         if not provider:
             provider = self.config.get_active_provider()
         
@@ -145,7 +174,33 @@ class AICLI:
                 self.current_provider = provider
                 return
         
-        # For OpenRouter and other OpenAI-compatible APIs
+        # For Claude, use Anthropic SDK
+        if provider == 'claude':
+            try:
+                from anthropic import Anthropic
+                self.client = Anthropic(api_key=api_key)
+                self.current_provider = provider
+                return
+            except ImportError:
+                print("Installing anthropic package...")
+                os.system(f"{sys.executable} -m pip install anthropic")
+                from anthropic import Anthropic
+                self.client = Anthropic(api_key=api_key)
+                self.current_provider = provider
+                return
+        
+        # For Manus, use requests library
+        if provider == 'manus':
+            import requests
+            self.client = requests.Session()
+            self.client.headers.update({
+                'Authorization': f'Bearer {api_key}',
+                'Content-Type': 'application/json'
+            })
+            self.current_provider = provider
+            return
+        
+        # For OpenRouter, DeepSeek, ChatGPT and other OpenAI-compatible APIs
         self.client = OpenAI(
             base_url=provider_info['base_url'],
             api_key=api_key
@@ -219,6 +274,37 @@ class AICLI:
                 else:
                     print(f"  • {provider_info['default_model']} (default)")
                     print("\nNote: Could not fetch full model list.")
+            
+            elif self.current_provider == 'claude':
+                # Claude doesn't have a models list endpoint, show common models
+                print(f"  • {provider_info['default_model']} (default)")
+                print("  • claude-3-5-sonnet-20241022")
+                print("  • claude-3-5-haiku-20241022")
+                print("  • claude-3-opus-20240229")
+                print("  • claude-3-sonnet-20240229")
+                print("  • claude-3-haiku-20240307")
+                print("\nNote: Visit https://docs.anthropic.com/en/docs/about-claude/models for full model list.")
+            
+            elif self.current_provider == 'manus':
+                # Manus doesn't expose models list, show default
+                print(f"  • {provider_info['default_model']} (default)")
+                print("\nNote: Visit https://manus.im for available models and capabilities.")
+            
+            elif self.current_provider in ['deepseek', 'chatgpt']:
+                # Show common models for these providers
+                if self.current_provider == 'deepseek':
+                    print(f"  • {provider_info['default_model']} (default)")
+                    print("  • deepseek-reasoner")
+                    print("  • deepseek-coder")
+                    print("\nNote: Visit https://platform.deepseek.com for full model list.")
+                else:  # chatgpt
+                    print(f"  • {provider_info['default_model']} (default)")
+                    print("  • gpt-4")
+                    print("  • gpt-4-turbo")
+                    print("  • gpt-3.5-turbo")
+                    print("  • gpt-4o-mini")
+                    print("\nNote: Visit https://platform.openai.com/docs/models for full model list.")
+            
             else:
                 # OpenRouter and other OpenAI-compatible
                 models = self.client.models.list()
@@ -270,8 +356,52 @@ class AICLI:
                     response = self.client.chat(model, messages=[{'role': 'user', 'content': message}], stream=False)
                     print("Response:", response.get('message', {}).get('content', ''))
                     print()
+            
+            elif self.current_provider == 'claude':
+                # Use Claude/Anthropic client
+                if stream:
+                    print("Response: ", end="", flush=True)
+                    with self.client.messages.stream(
+                        model=model,
+                        max_tokens=4096,
+                        messages=[{"role": "user", "content": message}]
+                    ) as stream:
+                        for text in stream.text_stream:
+                            print(text, end="", flush=True)
+                    print("\n")
+                else:
+                    response = self.client.messages.create(
+                        model=model,
+                        max_tokens=4096,
+                        messages=[{"role": "user", "content": message}]
+                    )
+                    print("Response:", response.content[0].text)
+                    print()
+            
+            elif self.current_provider == 'manus':
+                # Use Manus API - creates a task and retrieves result
+                import requests
+                task_data = {
+                    "description": message,
+                    "model": model
+                }
+                response = self.client.post(
+                    f"{provider_info['base_url']}/v1/tasks",
+                    json=task_data
+                )
+                
+                if response.status_code == 200 or response.status_code == 201:
+                    task = response.json()
+                    task_id = task.get('id') or task.get('task_id')
+                    print(f"Task created: {task_id}")
+                    print("Response:", task.get('result', task.get('response', 'Task created successfully')))
+                    print()
+                else:
+                    print(f"Error: API returned status {response.status_code}")
+                    print(response.text)
+            
             else:
-                # OpenRouter and other OpenAI-compatible
+                # OpenRouter, DeepSeek, ChatGPT and other OpenAI-compatible
                 if stream:
                     try:
                         response = self.client.chat.completions.create(
@@ -321,6 +451,11 @@ class AICLI:
             provider_config = self.config.get_provider_config(self.current_provider)
             model = provider_config.get('default_model', provider_info['default_model'])
         
+        # Warn about Manus not supporting interactive mode well
+        if self.current_provider == 'manus':
+            print("\nNote: Manus AI is task-based and may not be ideal for interactive chat.")
+            print("Each message creates a new task. Consider using 'chat' command instead.\n")
+        
         print("\n" + "="*60)
         print("  🐕 Chico Chuwawa AI CLI - Built by Max van Heerden")
         print("="*60)
@@ -361,8 +496,54 @@ class AICLI:
                             response = self.client.chat(model, messages=messages, stream=False)
                             assistant_message = response.get('message', {}).get('content', '')
                             print(assistant_message, end="", flush=True)
+                    
+                    elif self.current_provider == 'claude':
+                        # Claude client - convert messages to Claude format
+                        claude_messages = []
+                        for msg in messages:
+                            claude_messages.append({"role": msg["role"], "content": msg["content"]})
+                        
+                        if use_streaming:
+                            assistant_message = ""
+                            with self.client.messages.stream(
+                                model=model,
+                                max_tokens=4096,
+                                messages=claude_messages
+                            ) as stream:
+                                for text in stream.text_stream:
+                                    print(text, end="", flush=True)
+                                    assistant_message += text
+                        else:
+                            response = self.client.messages.create(
+                                model=model,
+                                max_tokens=4096,
+                                messages=claude_messages
+                            )
+                            assistant_message = response.content[0].text
+                            print(assistant_message, end="", flush=True)
+                    
+                    elif self.current_provider == 'manus':
+                        # Manus - create task for each message (not ideal for conversation)
+                        import requests
+                        task_data = {
+                            "description": user_input,
+                            "model": model
+                        }
+                        response = self.client.post(
+                            f"{provider_info['base_url']}/v1/tasks",
+                            json=task_data
+                        )
+                        
+                        if response.status_code == 200 or response.status_code == 201:
+                            task = response.json()
+                            assistant_message = task.get('result', task.get('response', 'Task created'))
+                            print(assistant_message, end="", flush=True)
+                        else:
+                            assistant_message = f"Error: API returned status {response.status_code}"
+                            print(assistant_message, end="", flush=True)
+                    
                     else:
-                        # OpenRouter and others
+                        # OpenRouter, DeepSeek, ChatGPT and others
                         if use_streaming:
                             response = self.client.chat.completions.create(
                                 model=model,
@@ -397,6 +578,16 @@ class AICLI:
                         if self.current_provider == 'ollama':
                             response = self.client.chat(model, messages=messages, stream=False)
                             assistant_message = response.get('message', {}).get('content', '')
+                        elif self.current_provider == 'claude':
+                            response = self.client.messages.create(
+                                model=model,
+                                max_tokens=4096,
+                                messages=messages
+                            )
+                            assistant_message = response.content[0].text
+                        elif self.current_provider == 'manus':
+                            # Already non-streaming
+                            raise
                         else:
                             response = self.client.chat.completions.create(
                                 model=model,
@@ -456,7 +647,7 @@ Examples:
     
     # Config command
     config_parser = subparsers.add_parser('config', help='Configure API credentials')
-    config_parser.add_argument('provider', choices=['openrouter', 'ollama'], help='Provider to configure')
+    config_parser.add_argument('provider', choices=['openrouter', 'ollama', 'deepseek', 'chatgpt', 'claude', 'manus'], help='Provider to configure')
     config_parser.add_argument('--api-key', required=True, help='API key')
     config_parser.add_argument('--default-model', help='Default model to use (optional)')
     
@@ -465,23 +656,23 @@ Examples:
     
     # Switch command
     switch_parser = subparsers.add_parser('switch', help='Switch active provider')
-    switch_parser.add_argument('provider', choices=['openrouter', 'ollama'], help='Provider to switch to')
+    switch_parser.add_argument('provider', choices=['openrouter', 'ollama', 'deepseek', 'chatgpt', 'claude', 'manus'], help='Provider to switch to')
     
     # Models command
     models_parser = subparsers.add_parser('models', help='List available models')
-    models_parser.add_argument('--provider', choices=['openrouter', 'ollama'], help='Provider to list models from')
+    models_parser.add_argument('--provider', choices=['openrouter', 'ollama', 'deepseek', 'chatgpt', 'claude', 'manus'], help='Provider to list models from')
     
     # Chat command
     chat_parser = subparsers.add_parser('chat', help='Send a chat message')
     chat_parser.add_argument('message', help='Message to send')
     chat_parser.add_argument('--model', help='Model to use')
-    chat_parser.add_argument('--provider', choices=['openrouter', 'ollama'], help='Provider to use')
+    chat_parser.add_argument('--provider', choices=['openrouter', 'ollama', 'deepseek', 'chatgpt', 'claude', 'manus'], help='Provider to use')
     chat_parser.add_argument('--no-stream', action='store_true', help='Disable streaming response')
     
     # Interactive command
     interactive_parser = subparsers.add_parser('interactive', help='Start interactive chat session')
     interactive_parser.add_argument('--model', help='Model to use')
-    interactive_parser.add_argument('--provider', choices=['openrouter', 'ollama'], help='Provider to use')
+    interactive_parser.add_argument('--provider', choices=['openrouter', 'ollama', 'deepseek', 'chatgpt', 'claude', 'manus'], help='Provider to use')
     
     args = parser.parse_args()
     
