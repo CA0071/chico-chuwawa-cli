@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Chico Chuwawa AI CLI - Enhanced Version
-A comprehensive command-line interface with multi-provider support and integrations
+Chico Chuwawa AI CLI
+A powerful command-line interface for interacting with OpenRouter and Ollama Cloud APIs
 
 Built by: Max van Heerden
-Version: 3.0.0
+Version: 2.0.0
 """
 
 import os
@@ -14,42 +14,19 @@ import argparse
 from pathlib import Path
 from typing import Optional
 
-# Add the chico package to path if running from repo
-sys.path.insert(0, os.path.dirname(__file__))
-
 try:
     from openai import OpenAI
 except ImportError:
-    print("Installing required packages...")
-    os.system(f"{sys.executable} -m pip install openai --quiet")
+    print("Error: openai package not found. Installing...")
+    os.system(f"{sys.executable} -m pip install openai")
     from openai import OpenAI
-
-# Import enhanced modules
-try:
-    from chico.ui.animations import show_welcome_banner, show_animated_chihuahua
-    from chico.ui.loading import LoadingSpinner, get_random_message
-    from chico.ui.syntax import format_response
-    from chico.utils.history import ChatHistory
-    from chico.utils.search import CodeSearcher
-    from chico.integrations.mcp_servers import (
-        MCPServerManager, GitHubMCP, RailwayMCP, VercelMCP,
-        Office365MCP, ZohoCRMMCP
-    )
-    from chico.integrations.desktop_apps import (
-        DesktopAppManager, ManusAI, DeepSeekApp, ClaudeApp, ChatGPTApp
-    )
-    from chico.integrations.whatsapp import WhatsAppIntegration
-    ENHANCED_FEATURES = True
-except ImportError as e:
-    ENHANCED_FEATURES = False
-    print(f"Note: Some enhanced features unavailable. Run: pip install -r requirements.txt")
 
 
 class APIConfig:
     """Manage API configuration and credentials"""
     
     def __init__(self):
-        # Use cross-platform config storage
+        # Use Windows AppData for config storage
         if os.name == 'nt':
             config_dir = Path(os.environ.get('APPDATA', '')) / 'ChicoChuwawa-CLI'
         else:
@@ -94,25 +71,10 @@ class APIConfig:
         """Get configuration for a specific provider"""
         config = self.load_config()
         return config.get(provider, {})
-    
-    def save_integration_config(self, integration_name: str, config: dict):
-        """Save configuration for an integration"""
-        full_config = self.load_config()
-        if 'integrations' not in full_config:
-            full_config['integrations'] = {}
-        full_config['integrations'][integration_name] = config
-        
-        with open(self.config_file, 'w') as f:
-            json.dump(full_config, f, indent=2)
-    
-    def get_integration_config(self, integration_name: str) -> dict:
-        """Get configuration for an integration"""
-        config = self.load_config()
-        return config.get('integrations', {}).get(integration_name, {})
 
 
 class AICLI:
-    """Main CLI application class with enhanced features"""
+    """Main CLI application class"""
     
     # Provider configurations
     PROVIDERS = {
@@ -132,21 +94,10 @@ class AICLI:
         }
     }
     
-    def __init__(self, show_banner: bool = False):
+    def __init__(self):
         self.config = APIConfig()
         self.client = None
         self.current_provider = None
-        
-        # Initialize enhanced features
-        if ENHANCED_FEATURES:
-            self.history = ChatHistory()
-            self.searcher = CodeSearcher()
-            self.mcp_manager = MCPServerManager()
-            self.app_manager = DesktopAppManager()
-            self.whatsapp = WhatsAppIntegration()
-            
-            if show_banner:
-                show_welcome_banner()
     
     def initialize_client(self, provider: Optional[str] = None):
         """Initialize OpenAI-compatible client with configuration"""
@@ -168,7 +119,7 @@ class AICLI:
         
         if not api_key:
             print(f"Error: No API key found for {provider}.")
-            print(f"Please configure using: chico config {provider} --api-key YOUR_KEY")
+            print(f"Please configure using: chico-cli.py config {provider} --api-key YOUR_KEY")
             sys.exit(1)
         
         provider_info = self.PROVIDERS[provider]
@@ -185,7 +136,7 @@ class AICLI:
                 return
             except ImportError:
                 print("Installing ollama package...")
-                os.system(f"{sys.executable} -m pip install ollama --quiet")
+                os.system(f"{sys.executable} -m pip install ollama")
                 import ollama
                 self.client = ollama.Client(
                     host=provider_info['base_url'],
@@ -235,7 +186,7 @@ class AICLI:
         config = self.config.load_config()
         if provider not in config:
             print(f"Error: Provider '{provider}' is not configured yet.")
-            print(f"Configure it first: chico config {provider} --api-key YOUR_KEY")
+            print(f"Configure it first: chico-cli.py config {provider} --api-key YOUR_KEY")
             sys.exit(1)
         
         config['active_provider'] = provider
@@ -292,9 +243,7 @@ class AICLI:
             print(f"\nNote: Visit {provider_info['name']} website for full model list.")
             print()
     
-    def chat(self, message: str, model: Optional[str] = None, stream: bool = True, 
-             provider: Optional[str] = None, with_search: bool = False,
-             save_history: bool = False):
+    def chat(self, message: str, model: Optional[str] = None, stream: bool = True, provider: Optional[str] = None):
         """Send a chat message to the API"""
         self.initialize_client(provider)
         
@@ -305,34 +254,9 @@ class AICLI:
             provider_config = self.config.get_provider_config(self.current_provider)
             model = provider_config.get('default_model', provider_info['default_model'])
         
-        # Show loading animation
-        if ENHANCED_FEATURES:
-            spinner = LoadingSpinner(get_random_message())
-            spinner.start()
-            import time
-            for _ in range(5):
-                spinner.spin_once()
-                time.sleep(0.1)
-            spinner.stop()
-        
         print(f"\n💬 Sending message to {model} via {provider_info['name']}...\n")
         
-        # Optional: Search for coding solutions
-        if with_search and ENHANCED_FEATURES:
-            print("🔍 Searching for relevant coding solutions...")
-            results = self.searcher.search_stackoverflow(message, max_results=3)
-            search_context = self.searcher.format_results(results)
-            print(search_context)
-            message = f"{message}\n\nContext from search:\n{search_context}"
-        
-        # Create session if saving history
-        session_id = None
-        if save_history and ENHANCED_FEATURES:
-            session_id = self.history.create_session(self.current_provider, model)
-            self.history.add_message(session_id, 'user', message)
-        
         try:
-            response_text = ""
             if self.current_provider == 'ollama':
                 # Use Ollama client
                 if stream:
@@ -341,12 +265,10 @@ class AICLI:
                         content = part.get('message', {}).get('content', '')
                         if content:
                             print(content, end="", flush=True)
-                            response_text += content
                     print("\n")
                 else:
                     response = self.client.chat(model, messages=[{'role': 'user', 'content': message}], stream=False)
-                    response_text = response.get('message', {}).get('content', '')
-                    print("Response:", response_text)
+                    print("Response:", response.get('message', {}).get('content', ''))
                     print()
             else:
                 # OpenRouter and other OpenAI-compatible
@@ -361,9 +283,7 @@ class AICLI:
                         print("Response: ", end="", flush=True)
                         for chunk in response:
                             if chunk.choices[0].delta.content:
-                                content = chunk.choices[0].delta.content
-                                print(content, end="", flush=True)
-                                response_text += content
+                                print(chunk.choices[0].delta.content, end="", flush=True)
                         print("\n")
                     except Exception as stream_error:
                         if "streaming" in str(stream_error).lower():
@@ -373,8 +293,7 @@ class AICLI:
                                 messages=[{"role": "user", "content": message}],
                                 stream=False
                             )
-                            response_text = response.choices[0].message.content
-                            print("Response:", response_text)
+                            print("Response:", response.choices[0].message.content)
                             print()
                         else:
                             raise
@@ -384,25 +303,14 @@ class AICLI:
                         messages=[{"role": "user", "content": message}],
                         stream=False
                     )
-                    response_text = response.choices[0].message.content
-                    
-                    # Apply syntax highlighting if available
-                    if ENHANCED_FEATURES:
-                        response_text = format_response(response_text)
-                    
-                    print("Response:", response_text)
+                    print("Response:", response.choices[0].message.content)
                     print()
-            
-            # Save to history
-            if save_history and ENHANCED_FEATURES and session_id:
-                self.history.add_message(session_id, 'assistant', response_text)
         
         except Exception as e:
             print(f"Error: {e}")
             sys.exit(1)
     
-    def chat_interactive(self, model: Optional[str] = None, provider: Optional[str] = None,
-                        save_history: bool = True):
+    def chat_interactive(self, model: Optional[str] = None, provider: Optional[str] = None):
         """Start an interactive chat session"""
         self.initialize_client(provider)
         
@@ -419,18 +327,10 @@ class AICLI:
         print(f"\n🤖 Interactive Chat Mode")
         print(f"Provider: {provider_info['name']}")
         print(f"Model: {model}")
-        print("Type 'exit' or 'quit' to end the session")
-        if ENHANCED_FEATURES and save_history:
-            print("💾 Chat history is being saved")
-        print()
+        print("Type 'exit' or 'quit' to end the session\n")
         
         messages = []
         use_streaming = True
-        
-        # Create history session
-        session_id = None
-        if ENHANCED_FEATURES and save_history:
-            session_id = self.history.create_session(self.current_provider, model)
         
         while True:
             try:
@@ -445,17 +345,13 @@ class AICLI:
                 
                 messages.append({"role": "user", "content": user_input})
                 
-                # Save user message
-                if ENHANCED_FEATURES and save_history and session_id:
-                    self.history.add_message(session_id, 'user', user_input)
-                
                 print("AI: ", end="", flush=True)
                 
                 try:
-                    assistant_message = ""
                     if self.current_provider == 'ollama':
                         # Ollama client
                         if use_streaming:
+                            assistant_message = ""
                             for part in self.client.chat(model, messages=messages, stream=True):
                                 content = part.get('message', {}).get('content', '')
                                 if content:
@@ -474,6 +370,7 @@ class AICLI:
                                 stream=True
                             )
                             
+                            assistant_message = ""
                             for chunk in response:
                                 if chunk.choices[0].delta.content:
                                     content = chunk.choices[0].delta.content
@@ -490,10 +387,6 @@ class AICLI:
                     
                     print("\n")
                     messages.append({"role": "assistant", "content": assistant_message})
-                    
-                    # Save assistant message
-                    if ENHANCED_FEATURES and save_history and session_id:
-                        self.history.add_message(session_id, 'assistant', assistant_message)
                 
                 except Exception as api_error:
                     if "streaming" in str(api_error).lower() and use_streaming:
@@ -513,10 +406,6 @@ class AICLI:
                             assistant_message = response.choices[0].message.content
                         print(f"AI: {assistant_message}\n")
                         messages.append({"role": "assistant", "content": assistant_message})
-                        
-                        # Save assistant message
-                        if ENHANCED_FEATURES and save_history and session_id:
-                            self.history.add_message(session_id, 'assistant', assistant_message)
                     else:
                         raise
             
@@ -525,98 +414,41 @@ class AICLI:
                 break
             except Exception as e:
                 print(f"\nError: {e}\n")
-    
-    def show_history(self, limit: int = 10):
-        """Show recent chat history"""
-        if not ENHANCED_FEATURES:
-            print("History feature requires enhanced modules")
-            return
-        
-        sessions = self.history.list_sessions(limit)
-        
-        print(f"\n📚 Recent Chat Sessions (last {limit}):")
-        print("-" * 60)
-        
-        if not sessions:
-            print("  No chat history yet")
-            return
-        
-        for session in sessions:
-            print(f"\n  Session #{session['id']}: {session['title']}")
-            print(f"  Provider: {session['provider']} | Model: {session['model']}")
-            print(f"  Created: {session['created_at']}")
-        
-        print()
-    
-    def search_code(self, query: str, source: str = 'general'):
-        """Search for coding solutions"""
-        if not ENHANCED_FEATURES:
-            print("Search feature requires enhanced modules")
-            return
-        
-        print(f"\n🔍 Searching for: {query}")
-        print("-" * 60)
-        
-        if source == 'stackoverflow':
-            results = self.searcher.search_stackoverflow(query)
-        elif source == 'github':
-            results = self.searcher.search_github(query)
-        else:
-            results = self.searcher.search(query)
-        
-        print(self.searcher.format_results(results))
-    
-    def setup_whatsapp(self):
-        """Setup WhatsApp integration"""
-        if not ENHANCED_FEATURES:
-            print("WhatsApp feature requires enhanced modules")
-            return
-        
-        print("\n📱 WhatsApp Integration Setup")
-        print("-" * 60)
-        
-        self.whatsapp.connect()
 
 
 def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(
-        description='Chico Chuwawa AI CLI v3.0 - Built by Max van Heerden',
+        description='Chico Chuwawa AI CLI - Built by Max van Heerden',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # Configure OpenRouter
-  chico config openrouter --api-key YOUR_KEY
+  chico-cli.py config openrouter --api-key YOUR_KEY
   
   # Configure Ollama Cloud
-  chico config ollama --api-key YOUR_KEY
+  chico-cli.py config ollama --api-key YOUR_KEY
   
   # List providers
-  chico providers
+  chico-cli.py providers
   
   # Switch provider
-  chico switch ollama
+  chico-cli.py switch ollama
   
   # List available models
-  chico models
+  chico-cli.py models
   
   # Send a single message
-  chico chat "What is the capital of France?"
+  chico-cli.py chat "What is the capital of France?"
   
-  # Use a specific model with search
-  chico chat "How to sort array in Python?" --search
+  # Use a specific model
+  chico-cli.py chat "Explain quantum computing" --model meta-llama/llama-3.3-70b-instruct
   
   # Start interactive chat
-  chico interactive
+  chico-cli.py interactive
   
-  # View chat history
-  chico history
-  
-  # Search for code solutions
-  chico search "python async await"
-  
-  # Setup WhatsApp integration
-  chico whatsapp
+  # Interactive chat with specific model and provider
+  chico-cli.py interactive --model gpt-oss:120b-cloud --provider ollama
         """
     )
     
@@ -645,28 +477,11 @@ Examples:
     chat_parser.add_argument('--model', help='Model to use')
     chat_parser.add_argument('--provider', choices=['openrouter', 'ollama'], help='Provider to use')
     chat_parser.add_argument('--no-stream', action='store_true', help='Disable streaming response')
-    chat_parser.add_argument('--search', action='store_true', help='Search for coding solutions')
-    chat_parser.add_argument('--save', action='store_true', help='Save to history')
     
     # Interactive command
     interactive_parser = subparsers.add_parser('interactive', help='Start interactive chat session')
     interactive_parser.add_argument('--model', help='Model to use')
     interactive_parser.add_argument('--provider', choices=['openrouter', 'ollama'], help='Provider to use')
-    interactive_parser.add_argument('--no-save', action='store_true', help='Don\'t save history')
-    interactive_parser.add_argument('--banner', action='store_true', help='Show welcome banner')
-    
-    # History command
-    history_parser = subparsers.add_parser('history', help='View chat history')
-    history_parser.add_argument('--limit', type=int, default=10, help='Number of sessions to show')
-    
-    # Search command
-    search_parser = subparsers.add_parser('search', help='Search for coding solutions')
-    search_parser.add_argument('query', help='Search query')
-    search_parser.add_argument('--source', choices=['general', 'stackoverflow', 'github'], 
-                               default='general', help='Search source')
-    
-    # WhatsApp command
-    subparsers.add_parser('whatsapp', help='Setup WhatsApp integration')
     
     args = parser.parse_args()
     
@@ -674,11 +489,8 @@ Examples:
         parser.print_help()
         sys.exit(0)
     
-    # Create CLI instance
-    show_banner = hasattr(args, 'banner') and args.banner
-    cli = AICLI(show_banner=show_banner)
+    cli = AICLI()
     
-    # Execute command
     if args.command == 'config':
         cli.configure(args.provider, args.api_key, args.default_model)
     
@@ -692,21 +504,12 @@ Examples:
         cli.list_models(args.provider)
     
     elif args.command == 'chat':
-        cli.chat(args.message, args.model, stream=not args.no_stream, 
-                provider=args.provider, with_search=args.search, save_history=args.save)
+        cli.chat(args.message, args.model, stream=not args.no_stream, provider=args.provider)
     
     elif args.command == 'interactive':
-        cli.chat_interactive(args.model, args.provider, save_history=not args.no_save)
-    
-    elif args.command == 'history':
-        cli.show_history(args.limit)
-    
-    elif args.command == 'search':
-        cli.search_code(args.query, args.source)
-    
-    elif args.command == 'whatsapp':
-        cli.setup_whatsapp()
+        cli.chat_interactive(args.model, args.provider)
 
 
 if __name__ == '__main__':
     main()
+
