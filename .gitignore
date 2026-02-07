@@ -42,3 +42,8 @@ config.json
 # PyInstaller
 *.spec
 
+# Demo and test files
+demo_animation.py
+test_animation.py
+visual_demo.html
+

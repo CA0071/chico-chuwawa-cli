@@ -11,6 +11,8 @@ import os
 import sys
 import json
 import argparse
+import time
+import random
 from pathlib import Path
 from typing import Optional
 
@@ -20,6 +22,150 @@ except ImportError:
     print("Error: openai package not found. Installing...")
     os.system(f"{sys.executable} -m pip install openai")
     from openai import OpenAI
+
+try:
+    from rich.console import Console
+    from rich.live import Live
+    from rich.text import Text
+    from rich.panel import Panel
+except ImportError:
+    print("Installing rich library for animations...")
+    os.system(f"{sys.executable} -m pip install rich>=13.0.0")
+    from rich.console import Console
+    from rich.live import Live
+    from rich.text import Text
+    from rich.panel import Panel
+
+console = Console()
+
+
+# ASCII Art frames for walking Chihuahua (Applehead white Chihuahua)
+CHIHUAHUA_FRAMES = [
+    # Frame 1 - Left paw forward
+    """
+    /\\_/\\
+   ( o.o )
+    > ^ <
+   /|   |\\
+  (_|   |_)
+    """,
+    # Frame 2 - Mid-step
+    """
+    /\\_/\\
+   ( o.o )
+    > ^ <
+   /|   |\\
+  ( |   | )
+    """,
+    # Frame 3 - Right paw forward
+    """
+    /\\_/\\
+   ( o.o )
+    > ^ <
+   /|   |\\
+  (_|   |_)
+    """,
+    # Frame 4 - Mid-step (other side)
+    """
+    /\\_/\\
+   ( ^.^ )
+    > ^ <
+   /|   |\\
+  ( |   | )
+    """
+]
+
+# Sitting Chihuahua logo
+CHIHUAHUA_SITTING = """
+      /\\_/\\
+     ( o.o )
+      > ^ <
+     /|   |\\
+    ( |   | )
+   /  |   |  \\
+  '---'   '---'
+"""
+
+# Coding-themed waiting messages (jokes/puns about coding, AI, and Chihuahuas)
+WAITING_MESSAGES = [
+    "🐕 Chihuahua compiling thoughts... (it's a small dog, big CPU!)",
+    "🐾 Fetching data... No, not that kind of fetch!",
+    "💭 Training neural networks... Just like potty training, but faster!",
+    "🦴 Caching responses... (Chihuahuas love caching bones!)",
+    "🎯 Optimizing bark-to-bite ratio in the algorithm...",
+    "🐕 Running Chihuahua Neural Network (ChNN)...",
+    "💻 Debugging with tiny paws... It's pawsible!",
+    "🔍 Sniffing out the best tokens...",
+    "🌟 Deploying Chihuahua Intelligence (CI/CD - Chihuahua Intelligence/Continuous Delivery)...",
+    "🐾 Executing tail-recursive functions...",
+    "🦴 Parsing bark data structures...",
+    "💡 Chihuahua thinking: If(treats > 0) { wag(tail); }",
+    "🎨 Rendering AI response in Chihuahua-style...",
+    "⚡ Overclocking the tiny brain... Maximum cuteness achieved!",
+    "🔧 Refactoring code with bite-sized commits...",
+    "🐕 Stack overflow? More like snack overflow!",
+    "💭 Consulting the Chihuahua documentation (it barks back)...",
+    "🎯 Applying supervised learning... Chihuahua says: 'Sit! Stay! Code!'",
+    "🌈 Transforming inputs with attention mechanisms... Squirrel!",
+    "🦴 Garbage collecting... (Not literal garbage, we're sophisticated!)"
+]
+
+
+def display_walking_animation():
+    """Display Chihuahua walking across the screen"""
+    try:
+        width = console.width
+        # Number of positions to walk across
+        positions = min(width - 15, 50)  # Limit animation width
+        
+        for pos in range(positions):
+            # Cycle through frames
+            frame = CHIHUAHUA_FRAMES[pos % len(CHIHUAHUA_FRAMES)]
+            
+            # Create padding to simulate movement
+            padding = " " * pos
+            animated_frame = "\n".join(padding + line for line in frame.split("\n"))
+            
+            # Clear and display
+            console.clear()
+            console.print(animated_frame, style="bold white")
+            time.sleep(0.08)  # Animation speed
+        
+        # Clear after animation
+        console.clear()
+    except Exception:
+        # Fallback if animation fails
+        pass
+
+
+def display_logo():
+    """Display sitting Chihuahua as logo in the corner"""
+    try:
+        logo_panel = Panel(
+            Text(CHIHUAHUA_SITTING, style="bold white", justify="center"),
+            title="[bold cyan]🐕 Chico Chuwawa AI CLI[/bold cyan]",
+            subtitle="[dim]Built by Max van Heerden[/dim]",
+            border_style="cyan"
+        )
+        console.print(logo_panel)
+    except Exception:
+        # Fallback to simple text
+        print("\n🐕 Chico Chuwawa AI CLI - Built by Max van Heerden\n")
+
+
+def get_random_waiting_message():
+    """Get a random waiting message"""
+    return random.choice(WAITING_MESSAGES)
+
+
+def show_waiting_message():
+    """Show a random waiting message during API calls"""
+    try:
+        message = get_random_waiting_message()
+        console.print(f"\n[dim cyan]{message}[/dim cyan]")
+    except Exception:
+        # Silent fallback
+        pass
 
 
 class APIConfig:
@@ -254,7 +400,9 @@ class AICLI:
             provider_config = self.config.get_provider_config(self.current_provider)
             model = provider_config.get('default_model', provider_info['default_model'])
         
-        print(f"\n💬 Sending message to {model} via {provider_info['name']}...\n")
+        print(f"\n💬 Sending message to {model} via {provider_info['name']}...")
+        show_waiting_message()  # Show random waiting message
+        print()
         
         try:
             if self.current_provider == 'ollama':
@@ -321,9 +469,9 @@ class AICLI:
             provider_config = self.config.get_provider_config(self.current_provider)
             model = provider_config.get('default_model', provider_info['default_model'])
         
-        print("\n" + "="*60)
-        print("  🐕 Chico Chuwawa AI CLI - Built by Max van Heerden")
-        print("="*60)
+        # Display logo
+        display_logo()
+        
         print(f"\n🤖 Interactive Chat Mode")
         print(f"Provider: {provider_info['name']}")
         print(f"Model: {model}")
@@ -344,6 +492,9 @@ class AICLI:
                     continue
                 
                 messages.append({"role": "user", "content": user_input})
+                
+                # Show waiting message
+                show_waiting_message()
                 
                 print("AI: ", end="", flush=True)
                 
@@ -418,6 +569,9 @@ class AICLI:
 
 def main():
     """Main entry point"""
+    # Display walking animation on startup
+    display_walking_animation()
+    
     parser = argparse.ArgumentParser(
         description='Chico Chuwawa AI CLI - Built by Max van Heerden',
         formatter_class=argparse.RawDescriptionHelpFormatter,
