@@ -46,4 +46,6 @@ config.json
 demo_animation.py
 test_animation.py
 visual_demo.html
+actual_output.txt
+SCREENSHOT.md
 
