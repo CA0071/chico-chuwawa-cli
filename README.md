@@ -16,6 +16,115 @@ A powerful command-line interface (CLI) tool for Windows that integrates with **
 - **Streaming Responses**: Real-time response streaming with automatic fallback
 - **Flexible Configuration**: Per-provider API keys and default models
 - **No GPT Lock-in**: Choose your own models from any supported provider
+- **WhatsApp Integration**: Connect to WhatsApp Web, monitor messages, and send AI-generated responses
+
+## 📱 WhatsApp Integration
+
+The CLI now supports WhatsApp Web integration using Selenium for web automation. This allows you to:
+
+- **Connect to WhatsApp Web**: Scan QR code to connect
+- **Monitor Messages**: Watch for incoming messages in real-time
+- **Send Messages**: Send messages to any chat programmatically
+- **AI Integration**: Send AI-generated prompts/responses to chats
+- **Cross-Platform Browsers**: Support for Chrome, Firefox, and Edge
+
+### WhatsApp Commands
+
+| Command | Description |
+|---------|-------------|
+| `whatsapp connect` | Connect to WhatsApp Web via QR code scanning |
+| `whatsapp monitor` | Monitor incoming messages continuously |
+| `whatsapp send CHAT MESSAGE` | Send a message to a specific chat |
+| `whatsapp prompt CHAT MESSAGE` | Send AI-generated prompt/response |
+
+### WhatsApp Setup
+
+1. **Install Dependencies** (if not already installed):
+   ```bash
+   pip install selenium webdriver-manager
+   ```
+
+2. **Choose Your Browser**: The CLI supports Chrome (default), Firefox, or Edge.
+   Make sure your chosen browser is installed on your system.
+
+3. **Connect to WhatsApp Web**:
+   ```bash
+   python chico-cli.py whatsapp connect
+   ```
+   
+   This will:
+   - Open a browser window
+   - Display WhatsApp Web with QR code
+   - Wait for you to scan the QR code with your phone
+   - Confirm successful connection
+
+### WhatsApp Usage Examples
+
+#### Connect to WhatsApp Web
+```bash
+# Connect with default browser (Chrome)
+python chico-cli.py whatsapp connect
+
+# Connect with Firefox
+python chico-cli.py whatsapp connect --browser firefox
+
+# Connect with custom timeout
+python chico-cli.py whatsapp connect --timeout 120
+```
+
+#### Monitor Incoming Messages
+```bash
+# Monitor messages with default interval (5 seconds)
+python chico-cli.py whatsapp monitor
+
+# Monitor with custom interval
+python chico-cli.py whatsapp monitor --interval 10
+
+# Monitor with Firefox
+python chico-cli.py whatsapp monitor --browser firefox
+```
+
+#### Send Messages
+```bash
+# Send a message to a contact
+python chico-cli.py whatsapp send "John Doe" "Hello from CLI!"
+
+# Send to a group
+python chico-cli.py whatsapp send "Family Group" "Meeting at 5pm"
+
+# Send with Firefox
+python chico-cli.py whatsapp send "Jane" "Hi!" --browser firefox
+```
+
+#### Send AI Prompts
+```bash
+# Send AI-generated prompt
+python chico-cli.py whatsapp prompt "John Doe" "What's the weather today?"
+
+# Send custom message as prompt
+python chico-cli.py whatsapp prompt "Work Group" "Project update: All tasks completed"
+```
+
+### Browser Options
+
+- **Chrome** (default): Most widely tested, recommended
+- **Firefox**: Good alternative if Chrome is not available
+- **Edge**: Windows users can use Edge as an alternative
+
+Example with different browsers:
+```bash
+python chico-cli.py whatsapp connect --browser chrome
+python chico-cli.py whatsapp connect --browser firefox
+python chico-cli.py whatsapp connect --browser edge
+```
+
+### Important Notes
+
+- **QR Code Scanning**: You need to scan the QR code with your phone each time you connect (unless session is saved)
+- **Keep Browser Open**: The browser window must stay open while monitoring or sending messages
+- **Session Persistence**: Your WhatsApp session is saved locally, so you may not need to scan QR code every time
+- **Internet Connection**: Both your computer and phone need internet connectivity
+- **WhatsApp App**: Your phone must have WhatsApp installed and be connected to the internet
 
 ## 🚀 Supported Providers
 
@@ -220,6 +329,18 @@ python chico-cli.py interactive --provider ollama --model "deepseek-v3.1:671b-cl
 | `interactive` | Start interactive chat |
 | `interactive --model MODEL` | Interactive with specific model |
 | `interactive --provider PROVIDER` | Interactive with specific provider |
+
+### WhatsApp Commands
+
+| Command | Description |
+|---------|-------------|
+| `whatsapp connect` | Connect to WhatsApp Web via QR code |
+| `whatsapp connect --browser BROWSER` | Connect with specific browser (chrome/firefox/edge) |
+| `whatsapp connect --timeout SECONDS` | Set QR scan timeout |
+| `whatsapp monitor` | Monitor incoming messages |
+| `whatsapp monitor --interval SECONDS` | Set monitoring interval |
+| `whatsapp send CHAT MESSAGE` | Send message to specific chat |
+| `whatsapp prompt CHAT MESSAGE` | Send AI-generated prompt/response |
 
 ## 🎯 Popular Models
 

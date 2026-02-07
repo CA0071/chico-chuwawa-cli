@@ -483,6 +483,38 @@ Examples:
     interactive_parser.add_argument('--model', help='Model to use')
     interactive_parser.add_argument('--provider', choices=['openrouter', 'ollama'], help='Provider to use')
     
+    # WhatsApp command group
+    whatsapp_parser = subparsers.add_parser('whatsapp', help='WhatsApp Web integration')
+    whatsapp_subparsers = whatsapp_parser.add_subparsers(dest='whatsapp_command', help='WhatsApp commands')
+    
+    # WhatsApp connect
+    connect_parser = whatsapp_subparsers.add_parser('connect', help='Connect to WhatsApp Web via QR code')
+    connect_parser.add_argument('--browser', choices=['chrome', 'firefox', 'edge'], default='chrome',
+                                help='Browser to use (default: chrome)')
+    connect_parser.add_argument('--timeout', type=int, default=60,
+                                help='QR code scan timeout in seconds (default: 60)')
+    
+    # WhatsApp monitor
+    monitor_parser = whatsapp_subparsers.add_parser('monitor', help='Monitor incoming messages')
+    monitor_parser.add_argument('--browser', choices=['chrome', 'firefox', 'edge'], default='chrome',
+                                help='Browser to use (default: chrome)')
+    monitor_parser.add_argument('--interval', type=int, default=5,
+                                help='Check interval in seconds (default: 5)')
+    
+    # WhatsApp prompt
+    prompt_parser = whatsapp_subparsers.add_parser('prompt', help='Send AI-generated prompt/response to chat')
+    prompt_parser.add_argument('chat_name', help='Name of the contact or group')
+    prompt_parser.add_argument('message', help='Message to send')
+    prompt_parser.add_argument('--browser', choices=['chrome', 'firefox', 'edge'], default='chrome',
+                                help='Browser to use (default: chrome)')
+    
+    # WhatsApp send
+    send_parser = whatsapp_subparsers.add_parser('send', help='Send a message to a chat')
+    send_parser.add_argument('chat_name', help='Name of the contact or group')
+    send_parser.add_argument('message', help='Message to send')
+    send_parser.add_argument('--browser', choices=['chrome', 'firefox', 'edge'], default='chrome',
+                              help='Browser to use (default: chrome)')
+    
     args = parser.parse_args()
     
     if not args.command:
@@ -508,6 +540,96 @@ Examples:
     
     elif args.command == 'interactive':
         cli.chat_interactive(args.model, args.provider)
+    
+    elif args.command == 'whatsapp':
+        # Import WhatsApp manager only when needed
+        try:
+            from whatsapp_manager import WhatsAppManager
+        except ImportError:
+            print("Error: Required packages not installed. Installing...")
+            os.system(f"{sys.executable} -m pip install selenium webdriver-manager")
+            from whatsapp_manager import WhatsAppManager
+        
+        if not args.whatsapp_command:
+            whatsapp_parser.print_help()
+            sys.exit(0)
+        
+        if args.whatsapp_command == 'connect':
+            print("\n🔗 WhatsApp Web Connection")
+            print("=" * 60)
+            print(f"Browser: {args.browser.capitalize()}")
+            print(f"Timeout: {args.timeout} seconds")
+            print()
+            
+            wa_manager = WhatsAppManager(browser=args.browser)
+            try:
+                if wa_manager.connect(timeout=args.timeout):
+                    print("\n✓ Connection successful!")
+                    print("  You can now use 'monitor' or 'send' commands")
+                    print("  Keep this window open to maintain the session")
+                    input("\nPress Enter to disconnect...")
+                else:
+                    print("\n✗ Connection failed")
+                    sys.exit(1)
+            finally:
+                wa_manager.disconnect()
+        
+        elif args.whatsapp_command == 'monitor':
+            print("\n👀 WhatsApp Message Monitor")
+            print("=" * 60)
+            print(f"Browser: {args.browser.capitalize()}")
+            print(f"Check interval: {args.interval} seconds")
+            print()
+            
+            wa_manager = WhatsAppManager(browser=args.browser)
+            try:
+                if wa_manager.connect(timeout=60):
+                    wa_manager.monitor_messages(interval=args.interval)
+                else:
+                    print("\n✗ Could not connect to WhatsApp Web")
+                    sys.exit(1)
+            except KeyboardInterrupt:
+                print("\n\nStopping monitor...")
+            finally:
+                wa_manager.disconnect()
+        
+        elif args.whatsapp_command == 'prompt':
+            print("\n📤 Send AI Prompt to WhatsApp")
+            print("=" * 60)
+            print(f"Chat: {args.chat_name}")
+            print(f"Message: {args.message}")
+            print()
+            
+            wa_manager = WhatsAppManager(browser=args.browser)
+            try:
+                if wa_manager.connect(timeout=60):
+                    success = wa_manager.send_message(args.chat_name, args.message)
+                    if not success:
+                        sys.exit(1)
+                else:
+                    print("\n✗ Could not connect to WhatsApp Web")
+                    sys.exit(1)
+            finally:
+                wa_manager.disconnect()
+        
+        elif args.whatsapp_command == 'send':
+            print("\n📤 Send Message to WhatsApp")
+            print("=" * 60)
+            print(f"Chat: {args.chat_name}")
+            print(f"Message: {args.message}")
+            print()
+            
+            wa_manager = WhatsAppManager(browser=args.browser)
+            try:
+                if wa_manager.connect(timeout=60):
+                    success = wa_manager.send_message(args.chat_name, args.message)
+                    if not success:
+                        sys.exit(1)
+                else:
+                    print("\n✗ Could not connect to WhatsApp Web")
+                    sys.exit(1)
+            finally:
+                wa_manager.disconnect()
 
 
 if __name__ == '__main__':
