@@ -3,12 +3,13 @@
 ![Chico Chuwawa Logo](chico-logo.png)
 
 **Built by Max van Heerden**  
-**Version 2.0.0**
+**Version 2.1.0**
 
-A powerful command-line interface (CLI) tool for Windows that integrates with **OpenRouter** and **Ollama Cloud** APIs. Access hundreds of AI models from multiple providers through a single, easy-to-use interface.
+A powerful command-line interface (CLI) tool that integrates with **OpenRouter** and **Ollama Cloud** APIs for AI chat, plus **MCP Server integrations** for GitHub, Railway, Vercel, Office 365, Browser automation, and Zoho services. Access hundreds of AI models and manage multiple services through a single, easy-to-use interface.
 
 ## 🌟 Features
 
+### AI Chat Features
 - **Multi-Provider Support**: OpenRouter and Ollama Cloud integration
 - **Hundreds of Models**: Access models from OpenAI, Anthropic, Google, Meta, Mistral, DeepSeek, and more
 - **Easy Provider Switching**: Switch between providers with a single command
@@ -17,7 +18,18 @@ A powerful command-line interface (CLI) tool for Windows that integrates with **
 - **Flexible Configuration**: Per-provider API keys and default models
 - **No GPT Lock-in**: Choose your own models from any supported provider
 
-## 🚀 Supported Providers
+### MCP Server Integrations
+- **GitHub**: Repository management, issue creation, branch operations
+- **Railway**: Project and deployment management
+- **Vercel**: Deployment and project management
+- **Office 365**: Email, calendar operations via Microsoft Graph API
+- **Browser Automation**: Playwright-based browser control
+- **Zoho CRM**: Lead and contact management
+- **Zoho Desk**: Support ticket management
+- **Zoho Invoice**: Invoice and customer management
+- **Sandbox/Production Modes**: Safe testing before production use
+
+## 🚀 Supported AI Providers
 
 ### OpenRouter
 Access 500+ models from multiple providers:
@@ -54,10 +66,19 @@ This installs:
 - `openai` - OpenAI-compatible API client
 - `ollama` - Ollama Cloud client
 - `requests` - HTTP library
+- `playwright` - Browser automation (optional, for MCP browser integration)
+
+### Optional: Playwright Setup (for Browser Automation)
+
+```bash
+playwright install
+```
 
 ## 🔑 Configuration
 
-### Get Your API Keys
+### AI Provider Configuration
+
+Get your API keys from the provider websites and configure them.
 
 #### OpenRouter
 1. Visit [openrouter.ai](https://openrouter.ai/)
@@ -452,6 +473,85 @@ OpenRouter and Ollama have rate limits. If you hit them:
 - Don't commit config files to version control
 - Use environment variables for CI/CD pipelines
 - Rotate API keys regularly
+- **MCP Sandbox Mode**: Use sandbox mode for testing before production
+
+## 🔌 MCP Server Integrations
+
+### Quick Start
+
+```bash
+# Configure a service (sandbox mode by default)
+python chico-cli.py mcp config github --token YOUR_GITHUB_TOKEN --mode sandbox
+
+# List configured services
+python chico-cli.py mcp list
+
+# Use the service
+python chico-cli.py mcp github list-repos
+```
+
+### Supported MCP Services
+
+1. **GitHub** - Repository management
+   ```bash
+   python chico-cli.py mcp github list-repos
+   python chico-cli.py mcp github create-repo my-repo
+   ```
+
+2. **Railway** - Deployment management
+   ```bash
+   python chico-cli.py mcp railway list-projects
+   ```
+
+3. **Vercel** - Deployment management
+   ```bash
+   python chico-cli.py mcp vercel list-deployments
+   ```
+
+4. **Office 365** - Email and calendar
+   ```bash
+   python chico-cli.py mcp office365 list-emails
+   python chico-cli.py mcp office365 send-email user@example.com "Subject" "Body"
+   ```
+
+5. **Browser Automation** - Web automation
+   ```bash
+   python chico-cli.py mcp browser launch
+   python chico-cli.py mcp browser navigate https://example.com
+   python chico-cli.py mcp browser screenshot output.png
+   ```
+
+6. **Zoho CRM** - Customer management
+   ```bash
+   python chico-cli.py mcp zoho-crm list-leads
+   python chico-cli.py mcp zoho-crm create-lead John Doe john@example.com "Acme Corp"
+   ```
+
+7. **Zoho Desk** - Support tickets
+   ```bash
+   python chico-cli.py mcp zoho-desk list-tickets
+   ```
+
+8. **Zoho Invoice** - Invoice management
+   ```bash
+   python chico-cli.py mcp zoho-invoice list-invoices
+   python chico-cli.py mcp zoho-invoice list-customers
+   ```
+
+### Sandbox vs Production Mode
+
+- **Sandbox Mode** (default): Safe for testing, simulates destructive operations
+- **Production Mode**: Full access to real data and operations
+
+```bash
+# Sandbox mode (safe)
+python chico-cli.py mcp config github --token TOKEN --mode sandbox
+
+# Production mode (use with caution)
+python chico-cli.py mcp config github --token TOKEN --mode production
+```
+
+For detailed MCP integration guide, see [MCP_INTEGRATION_GUIDE.md](MCP_INTEGRATION_GUIDE.md)
 
 ## 📚 Resources
 
@@ -460,9 +560,28 @@ OpenRouter and Ollama have rate limits. If you hit them:
 - **OpenRouter Models**: [openrouter.ai/models](https://openrouter.ai/models)
 - **Ollama Cloud**: [ollama.com/cloud](https://ollama.com/cloud)
 - **Ollama Docs**: [docs.ollama.com](https://docs.ollama.com/)
+- **GitHub API**: [docs.github.com/en/rest](https://docs.github.com/en/rest)
+- **Railway Docs**: [docs.railway.app](https://docs.railway.app/)
+- **Vercel API**: [vercel.com/docs/rest-api](https://vercel.com/docs/rest-api)
+- **Microsoft Graph**: [docs.microsoft.com/graph](https://docs.microsoft.com/graph)
+- **Playwright**: [playwright.dev](https://playwright.dev/)
+- **Zoho API**: [www.zoho.com/crm/developer](https://www.zoho.com/crm/developer)
 
-## 🎉 What's New in v2.0
+## 🎉 What's New in v2.1
 
+- ✅ **MCP Server Integrations**: 8 service integrations added
+- ✅ **Sandbox/Production Modes**: Safe testing before production use
+- ✅ **GitHub Integration**: Repository and issue management
+- ✅ **Railway & Vercel**: Deployment management
+- ✅ **Office 365**: Email and calendar operations
+- ✅ **Browser Automation**: Web automation with Playwright
+- ✅ **Zoho Services**: CRM, Desk, and Invoice integrations
+- ✅ **Modular Architecture**: Easy to extend with new services
+- ✅ **Enhanced Configuration**: Centralized credential management
+
+### Previous Versions
+
+**v2.0:**
 - ✅ **OpenRouter Integration**: Access 500+ models
 - ✅ **Ollama Cloud Support**: Cloud-hosted models
 - ✅ **Multi-Provider System**: Switch between providers easily
