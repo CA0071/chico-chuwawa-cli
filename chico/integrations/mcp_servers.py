@@ -49,9 +49,9 @@ class GitHubMCP(MCPServer):
         
         try:
             headers = {'Authorization': f'token {self.api_token}'}
-            response = requests.get(f"{self.base_url}/user", headers=headers)
+            response = requests.get(f"{self.base_url}/user", headers=headers, timeout=5)
             return response.status_code == 200
-        except:
+        except requests.RequestException:
             return False
     
     def execute(self, action: str, params: Dict) -> Any:

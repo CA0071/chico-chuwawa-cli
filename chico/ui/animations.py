@@ -65,7 +65,7 @@ def show_animated_chihuahua(duration: float = 2.0, clear: bool = False):
             time.sleep(0.3)
             if i < frames_to_show - 1:
                 # Move cursor up to overwrite
-                console.print(f"\033[{len(frame.split(chr(10)))}A", end="")
+                console.print(f"\033[{len(frame.split('\n'))}A", end="")
     except ImportError:
         # Fallback without rich
         print(CHIHUAHUA_FRAMES[0])

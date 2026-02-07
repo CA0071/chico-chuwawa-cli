@@ -46,7 +46,7 @@ class ManusAI(DesktopApp):
             response = requests.get(f"{self.api_url}/health", timeout=2)
             self.connected = response.status_code == 200
             return self.connected
-        except:
+        except requests.RequestException:
             return False
     
     def send_message(self, message: str) -> str:
@@ -83,7 +83,7 @@ class DeepSeekApp(DesktopApp):
             response = requests.get(f"{self.api_url}/health", timeout=2)
             self.connected = response.status_code == 200
             return self.connected
-        except:
+        except requests.RequestException:
             return False
     
     def send_message(self, message: str) -> str:
@@ -119,7 +119,7 @@ class ClaudeApp(DesktopApp):
             response = requests.get(f"{self.api_url}/health", timeout=2)
             self.connected = response.status_code == 200
             return self.connected
-        except:
+        except requests.RequestException:
             return False
     
     def send_message(self, message: str) -> str:
@@ -155,7 +155,7 @@ class ChatGPTApp(DesktopApp):
             response = requests.get(f"{self.api_url}/health", timeout=2)
             self.connected = response.status_code == 200
             return self.connected
-        except:
+        except requests.RequestException:
             return False
     
     def send_message(self, message: str) -> str:

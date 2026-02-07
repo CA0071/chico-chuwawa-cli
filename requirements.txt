@@ -8,7 +8,4 @@ pyfiglet>=0.8.0
 qrcode>=7.4.0
 pillow>=10.0.0
 duckduckgo-search>=3.8.0
-python-whatsapp-bot>=0.1.0
-pyppeteer>=1.0.0
-sqlite3-python>=1.0.0
 

@@ -98,6 +98,7 @@ class CodeSearcher:
         for i, result in enumerate(results, 1):
             formatted += f"\n{i}. {result['title']}\n"
             formatted += f"   {result['url']}\n"
-            formatted += f"   {result['snippet'][:200]}...\n"
+            snippet = result['snippet'][:200] if len(result['snippet']) > 200 else result['snippet']
+            formatted += f"   {snippet}{'...' if len(result['snippet']) > 200 else ''}\n"
         
         return formatted

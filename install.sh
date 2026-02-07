@@ -74,7 +74,15 @@ echo -e "${YELLOW}Installing Chico Chuwawa CLI files...${NC}"
 # If running from repo, copy files
 if [ -f "chico-cli.py" ]; then
     echo -e "${YELLOW}Copying files from current directory...${NC}"
-    cp -r chico-cli.py requirements.txt chico/ "$INSTALL_DIR/" 2>/dev/null || true
+    
+    # Check if required directories exist
+    if [ ! -d "chico" ]; then
+        echo -e "${RED}Error: chico/ directory not found${NC}"
+        echo -e "${YELLOW}Please run this script from the repository directory${NC}"
+        exit 1
+    fi
+    
+    cp -r chico-cli.py requirements.txt chico/ "$INSTALL_DIR/"
     if [ -f "chico-logo.png" ]; then
         cp chico-logo.png "$INSTALL_DIR/"
     fi

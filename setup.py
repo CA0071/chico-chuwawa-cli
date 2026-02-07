@@ -47,7 +47,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "chico=chico-cli:main",
+            "chico=chico_cli:main",
         ],
     },
     include_package_data=True,
