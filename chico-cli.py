@@ -21,6 +21,8 @@ except ImportError:
     os.system(f"{sys.executable} -m pip install openai")
     from openai import OpenAI
 
+from syntax_highlighter import get_highlighter
+
 
 class APIConfig:
     """Manage API configuration and credentials"""
@@ -261,14 +263,28 @@ class AICLI:
                 # Use Ollama client
                 if stream:
                     print("Response: ", end="", flush=True)
+                    # Initialize streaming syntax highlighting state
+                    highlighter = get_highlighter()
+                    code_block_state = {'active': False, 'language': None}
+                    code_buffer = []
+                    
                     for part in self.client.chat(model, messages=[{'role': 'user', 'content': message}], stream=True):
                         content = part.get('message', {}).get('content', '')
                         if content:
-                            print(content, end="", flush=True)
+                            # Process chunk for syntax highlighting
+                            processed, should_flush = highlighter.detect_and_highlight_streaming(
+                                content, code_buffer, code_block_state
+                            )
+                            if processed:
+                                print(processed, end="", flush=True)
                     print("\n")
                 else:
                     response = self.client.chat(model, messages=[{'role': 'user', 'content': message}], stream=False)
-                    print("Response:", response.get('message', {}).get('content', ''))
+                    content = response.get('message', {}).get('content', '')
+                    # Apply syntax highlighting to the response
+                    highlighter = get_highlighter()
+                    highlighted_content = highlighter.process_text(content)
+                    print("Response:", highlighted_content)
                     print()
             else:
                 # OpenRouter and other OpenAI-compatible
@@ -281,9 +297,20 @@ class AICLI:
                         )
                         
                         print("Response: ", end="", flush=True)
+                        # Initialize streaming syntax highlighting state
+                        highlighter = get_highlighter()
+                        code_block_state = {'active': False, 'language': None}
+                        code_buffer = []
+                        
                         for chunk in response:
                             if chunk.choices[0].delta.content:
-                                print(chunk.choices[0].delta.content, end="", flush=True)
+                                content = chunk.choices[0].delta.content
+                                # Process chunk for syntax highlighting
+                                processed, should_flush = highlighter.detect_and_highlight_streaming(
+                                    content, code_buffer, code_block_state
+                                )
+                                if processed:
+                                    print(processed, end="", flush=True)
                         print("\n")
                     except Exception as stream_error:
                         if "streaming" in str(stream_error).lower():
@@ -293,7 +320,10 @@ class AICLI:
                                 messages=[{"role": "user", "content": message}],
                                 stream=False
                             )
-                            print("Response:", response.choices[0].message.content)
+                            content = response.choices[0].message.content
+                            highlighter = get_highlighter()
+                            highlighted_content = highlighter.process_text(content)
+                            print("Response:", highlighted_content)
                             print()
                         else:
                             raise
@@ -303,7 +333,10 @@ class AICLI:
                         messages=[{"role": "user", "content": message}],
                         stream=False
                     )
-                    print("Response:", response.choices[0].message.content)
+                    content = response.choices[0].message.content
+                    highlighter = get_highlighter()
+                    highlighted_content = highlighter.process_text(content)
+                    print("Response:", highlighted_content)
                     print()
         
         except Exception as e:
@@ -352,15 +385,27 @@ class AICLI:
                         # Ollama client
                         if use_streaming:
                             assistant_message = ""
+                            # Initialize streaming syntax highlighting state
+                            highlighter = get_highlighter()
+                            code_block_state = {'active': False, 'language': None}
+                            code_buffer = []
+                            
                             for part in self.client.chat(model, messages=messages, stream=True):
                                 content = part.get('message', {}).get('content', '')
                                 if content:
-                                    print(content, end="", flush=True)
+                                    # Process chunk for syntax highlighting
+                                    processed, should_flush = highlighter.detect_and_highlight_streaming(
+                                        content, code_buffer, code_block_state
+                                    )
+                                    if processed:
+                                        print(processed, end="", flush=True)
                                     assistant_message += content
                         else:
                             response = self.client.chat(model, messages=messages, stream=False)
                             assistant_message = response.get('message', {}).get('content', '')
-                            print(assistant_message, end="", flush=True)
+                            highlighter = get_highlighter()
+                            highlighted = highlighter.process_text(assistant_message)
+                            print(highlighted, end="", flush=True)
                     else:
                         # OpenRouter and others
                         if use_streaming:
@@ -371,10 +416,20 @@ class AICLI:
                             )
                             
                             assistant_message = ""
+                            # Initialize streaming syntax highlighting state
+                            highlighter = get_highlighter()
+                            code_block_state = {'active': False, 'language': None}
+                            code_buffer = []
+                            
                             for chunk in response:
                                 if chunk.choices[0].delta.content:
                                     content = chunk.choices[0].delta.content
-                                    print(content, end="", flush=True)
+                                    # Process chunk for syntax highlighting
+                                    processed, should_flush = highlighter.detect_and_highlight_streaming(
+                                        content, code_buffer, code_block_state
+                                    )
+                                    if processed:
+                                        print(processed, end="", flush=True)
                                     assistant_message += content
                         else:
                             response = self.client.chat.completions.create(
@@ -383,7 +438,9 @@ class AICLI:
                                 stream=False
                             )
                             assistant_message = response.choices[0].message.content
-                            print(assistant_message, end="", flush=True)
+                            highlighter = get_highlighter()
+                            highlighted = highlighter.process_text(assistant_message)
+                            print(highlighted, end="", flush=True)
                     
                     print("\n")
                     messages.append({"role": "assistant", "content": assistant_message})
@@ -404,7 +461,10 @@ class AICLI:
                                 stream=False
                             )
                             assistant_message = response.choices[0].message.content
-                        print(f"AI: {assistant_message}\n")
+                        
+                        highlighter = get_highlighter()
+                        highlighted = highlighter.process_text(assistant_message)
+                        print(f"AI: {highlighted}\n")
                         messages.append({"role": "assistant", "content": assistant_message})
                     else:
                         raise
