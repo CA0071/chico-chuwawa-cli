@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
 Chico Chuwawa AI CLI
-A powerful command-line interface for interacting with OpenRouter and Ollama Cloud APIs
+A powerful command-line interface for interacting with multiple AI providers
 
 Built by: Max van Heerden
-Version: 2.0.0
+Version: 2.1.0
 """
 
 import os
